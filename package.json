@@ -1,0 +1,16 @@
+{
+  "name": "br.com.andersonlucasg3.uikit",
+  "version": "0.1.0",
+  "displayName": "UIKit",
+  "description": "An iOS like ViewController pattern for Unity",
+  "unity": "2020.3",
+  "unityRelease": "5f1",
+  "dependencies": {
+    "com.unity.textmeshpro": "3.0.6"
+  },
+  "author": {
+    "name": "Anderson Lucas C. Ramos",
+    "email": "andersonlucasg3@hotmail.com",
+    "url": "https://github.com/andersonlucasg3"
+  }
+}
