@@ -1,4 +1,5 @@
 ﻿using System;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +10,7 @@ namespace UIKit
     {
         private Button _button = default;
 
-        public Action ClickAction { get; set; }
+        [UsedImplicitly] public Action action { get; set; }
         
         #region Life cycle
         
@@ -17,13 +18,13 @@ namespace UIKit
         {
             base.Awake();
             _button = GetComponent<Button>();
-            _button.onClick.AddListener(OnClick);
+            _button.onClick.AddListener(InvokeAction);
         }
 
         private void OnDestroy() => _button.onClick.RemoveAllListeners();
 
         #endregion
 
-        private void OnClick() => ClickAction?.Invoke();
+        private void InvokeAction() => action?.Invoke();
     }
 }
