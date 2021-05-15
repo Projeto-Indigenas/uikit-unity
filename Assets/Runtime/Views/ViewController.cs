@@ -102,7 +102,7 @@ namespace UIKit
     public class ViewController<TView> : ViewController where TView : AnimatedView
     {
         [UsedImplicitly]
-        [field: NonSerialized] private new TView view { get; set; } = default;
+        [field: NonSerialized] public new TView view { get; set; } = default;
 
         protected override void ViewDidLoad()
         {
