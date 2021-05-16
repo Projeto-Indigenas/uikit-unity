@@ -1,7 +1,7 @@
 using System.IO;
 using UnityEngine;
 
-namespace UIKit
+namespace UIKit.Extensions
 {
     internal static class GameObjectExt
     {
