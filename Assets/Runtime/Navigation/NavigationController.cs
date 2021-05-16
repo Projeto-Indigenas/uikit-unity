@@ -21,7 +21,7 @@ namespace UIKit
         [UsedImplicitly]
         public void Push(ViewController viewController, bool animated = true)
         {
-            if (_viewControllers.Count > 0) _viewControllers[_lastIndex].Dismiss();
+            if (_viewControllers.Count > 0) _viewControllers[_lastIndex].Dismiss(animated);
 
             _viewControllers.Add(viewController);
             ToInterface(viewController).Configure(this);
