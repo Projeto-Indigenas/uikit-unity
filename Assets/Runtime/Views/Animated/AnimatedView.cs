@@ -14,14 +14,14 @@ namespace UIKit.Animated
     [RequireComponent(typeof(Animator), typeof(ViewAnimationEventsReceiver))]
     public abstract class AnimatedView : View, IAnimatedView, IViewAnimationEventsReceiverListener
     {
-        private static readonly AnimLayer _defaultUILayer = new AnimLayer(0, "Default UI Layer");
-        private static readonly AnimState _showAnimState = new AnimState("Show", _defaultUILayer);
-        private static readonly AnimState _hideAnimState = new AnimState("Hide", _defaultUILayer);
+        private static readonly Layer _defaultUILayer = new Layer(0, "Default UI Layer");
+        private static readonly State _showAnimState = new State("Show", _defaultUILayer);
+        private static readonly State _hideAnimState = new State("Hide", _defaultUILayer);
 
         [SerializeField] private float _animationTransitionDuration = .2F;
         
         private Animator _animator = default;
-        private AnimState _animStateToPlay = default;
+        private State _animStateToPlay = default;
         
         private void CrossFade()
         {
