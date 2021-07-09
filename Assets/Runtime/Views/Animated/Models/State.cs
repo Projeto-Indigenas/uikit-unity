@@ -5,9 +5,9 @@ using UnityEngine;
 namespace UIKit.Animated.Models
 {
     [Serializable]
-    public class AnimState : IEquatable<AnimatorStateInfo>
+    internal class State : IEquatable<AnimatorStateInfo>
     {
-        private static SortedList<int, AnimState> _availableStates = default;
+        private static SortedList<int, State> _availableStates = default;
         
         [SerializeField] private bool _isInitialized = default;
 
@@ -17,7 +17,7 @@ namespace UIKit.Animated.Models
         [SerializeField] private int _shortNameHash = default;
         [SerializeField] private string _tag = default;
         [SerializeField] private int _tagHash = default;
-        [SerializeField] private AnimLayer _layer = default;
+        [SerializeField] private Layer _layer = default;
 
         public string fullPath => _fullPath;
         public int fullPathHash => _fullPathHash;
@@ -25,21 +25,21 @@ namespace UIKit.Animated.Models
         public int shortNameHash => _shortNameHash;
         public string tag => _tag;
         public int tagHash => _tagHash;
-        public AnimLayer layer => _layer;
+        public Layer layer => _layer;
         
-        [field: NonSerialized] public AnimState[] children { get; private set; } = new AnimState[0];
+        [field: NonSerialized] public State[] children { get; private set; } = new State[0];
 
-        public static SortedList<int, AnimState> availableStates
+        public static SortedList<int, State> availableStates
         {
             get
             {
                 if (_availableStates != null) return _availableStates;
-                _availableStates = new SortedList<int, AnimState>();
+                _availableStates = new SortedList<int, State>();
                 return _availableStates;
             }
         }
 
-        public AnimState(string name, AnimLayer layer, string tag = "")
+        public State(string name, Layer layer, string tag = "")
         {
             _fullPath = $"{layer.name}.{name}";
             _name = name;
@@ -54,7 +54,7 @@ namespace UIKit.Animated.Models
             _isInitialized = true;
         }
 
-        public AnimState(string name, AnimState parent, string tag = "")
+        public State(string name, State parent, string tag = "")
         {
             _fullPath = $"{parent.fullPath}.{name}";
             _name = name;
@@ -66,7 +66,7 @@ namespace UIKit.Animated.Models
 
             _layer = parent.layer;
 
-            parent.children = new List<AnimState>(parent.children)
+            parent.children = new List<State>(parent.children)
             {
                 this
             }.ToArray();
@@ -95,7 +95,7 @@ namespace UIKit.Animated.Models
             return Is(info);
         }
 
-        public static void Add(AnimState state)
+        public static void Add(State state)
         {
             availableStates.Add(state.fullPathHash, state);
         }
@@ -121,7 +121,7 @@ namespace UIKit.Animated.Models
             return value != 0 && value == expected;
         }
 
-        public static bool operator ==(AnimState lhs, AnimState rhs)
+        public static bool operator ==(State lhs, State rhs)
         {
             if (Equals(lhs, null))
             {
@@ -130,12 +130,12 @@ namespace UIKit.Animated.Models
             return lhs.Equals(rhs);
         }
 
-        public static bool operator !=(AnimState lhs, AnimState rhs)
+        public static bool operator !=(State lhs, State rhs)
         {
             return !(lhs == rhs);
         }
 
-        public static implicit operator int(AnimState data)
+        public static implicit operator int(State data)
         {
             return data.fullPathHash;
         }
