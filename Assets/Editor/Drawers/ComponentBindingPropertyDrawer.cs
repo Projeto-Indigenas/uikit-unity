@@ -146,14 +146,12 @@ namespace UIKit.Editor.Drawers
 
             Type parentType = targetObject.GetType();
             _propertyFieldInfo = parentType.GetField(property.propertyPath, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            
             if (_propertyFieldInfo.FieldType.GenericTypeArguments.Length > 0)
             {
                 _bindingGenericType = _propertyFieldInfo.FieldType.GenericTypeArguments[0];
             }
-            else
-            {
-                _bindingGenericType = typeof(View);
-            }
+            else _bindingGenericType = typeof(View);
 
             _binding = (ComponentBinding)_propertyFieldInfo.GetValue(property.serializedObject.targetObject);
             Type componentBindingType = typeof(ComponentBinding);
@@ -193,8 +191,8 @@ namespace UIKit.Editor.Drawers
             MethodInfo[] methods = Array.Empty<MethodInfo>();
             if (targetObject != null)
             {
-                Type parentType = targetObject.GetType();
-                methods = parentType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                Type targetObjectType = targetObject.GetType();
+                methods = targetObjectType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             }
 
             List<string> methodsNames = new List<string>() { "None" };
@@ -205,12 +203,20 @@ namespace UIKit.Editor.Drawers
             {
                 MethodInfo info = methods[index];
 
-                string methodSignature = GetFullMethodSignature(info);
-                string methodName = info.Name;
-
                 foreach (CustomAttributeData data in info.CustomAttributes)
                 {
                     if (!customAttributeType.Name.Equals(data.AttributeType.Name)) continue;
+
+                    ParameterInfo[] parameters = info.GetParameters();
+
+                    if (parameters.Length > 0 && !IsSameComponentActionGenericType(parameters[0].ParameterType) ||
+                        parameters.Length == 0 && IsGenericComponentAction())
+                    {
+                        continue;
+                    }
+
+                    string methodSignature = GetFullMethodSignature(info.Name, parameters);
+                    string methodName = info.Name;
 
                     methodsSignatures.Add(methodSignature);
                     methodsNames.Add(methodName);
@@ -243,23 +249,21 @@ namespace UIKit.Editor.Drawers
             _methodNameFieldInfo.SetValue(_binding, methodName);
         }
 
-        private string GetFullMethodSignature(MethodInfo methodInfo)
+        private string GetFullMethodSignature(string methodName, ParameterInfo[] parameters)
         {
-            string name = methodInfo.Name;
-            ParameterInfo[] parameters = methodInfo.GetParameters();
             if (parameters.Length > 0)
             {
-                name += "(";
+                methodName += "(";
                 for (int index = 0; index < parameters.Length; index++)
                 {
                     ParameterInfo parameter = parameters[index];
-                    name += parameter.ParameterType.Name;
-                    if (index < parameters.Length - 1) name += ",";
+                    methodName += parameter.ParameterType.Name;
+                    if (index < parameters.Length - 1) methodName += ",";
                 }
-                name += ")";
+                methodName += ")";
             }
-            else name += "(void)";
-            return name;
+            else methodName += "(void)";
+            return methodName;
         }
 
         private Color GetColor()
@@ -288,8 +292,22 @@ namespace UIKit.Editor.Drawers
         {
             if (_bindingGenericType == null) return false;
             bool isAction1 = _bindingGenericType.GetInterfaces().Contains(typeof(IComponentAction));
-            bool isAction2 = _bindingGenericType.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IComponentAction<>));
+            bool isAction2 = IsGenericComponentAction();
             return (isAction1 || isAction2) && _selectedComponentIndex > 0;
+        }
+
+        private bool IsGenericComponentAction()
+        {
+            return _bindingGenericType.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IComponentAction<>));
+        }
+
+        private bool IsSameComponentActionGenericType(Type genericType)
+        {
+            return _bindingGenericType.GetInterfaces().Any(i =>
+            {
+                bool isGeneric = i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IComponentAction<>);
+                return isGeneric && i.GenericTypeArguments[0] == genericType;
+            });
         }
     }
 }

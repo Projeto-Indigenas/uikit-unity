@@ -1,5 +1,4 @@
-﻿using JetBrains.Annotations;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UIKit.Animated
 {
@@ -17,8 +16,8 @@ namespace UIKit.Animated
 
         #region Visibility events
 
-        [UsedImplicitly] public void ViewDidAppear() => _listener.ViewDidAppear();
-        [UsedImplicitly] public void ViewDidDisappear() => _listener.ViewDidDisappear();
+        public void ViewDidAppear() => _listener.ViewDidAppear();
+        public void ViewDidDisappear() => _listener.ViewDidDisappear();
         
         #endregion
     }

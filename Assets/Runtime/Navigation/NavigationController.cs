@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using JetBrains.Annotations;
 
 namespace UIKit
 {
@@ -8,9 +7,9 @@ namespace UIKit
         private readonly List<ViewController> _viewControllers = new List<ViewController>();
         private int _lastIndex => _viewControllers.Count - 1;
 
-        [UsedImplicitly] public IReadOnlyList<ViewController> viewControllers => _viewControllers;
-        [UsedImplicitly] public ViewController presentingViewController => _viewControllers.Count == 0 ? null : _viewControllers[_lastIndex];
-        [UsedImplicitly] public bool isBeingPresented { get; private set; } = default;
+        public IReadOnlyList<ViewController> viewControllers => _viewControllers;
+        public ViewController presentingViewController => _viewControllers.Count == 0 ? null : _viewControllers[_lastIndex];
+        public bool isBeingPresented { get; private set; } = default;
 
         public NavigationController(ViewController viewController)
         {
@@ -18,7 +17,6 @@ namespace UIKit
             ToInterface(viewController).Configure(this);
         }
 
-        [UsedImplicitly]
         public void Push(ViewController viewController, bool animated = true)
         {
             if (_viewControllers.Count > 0) _viewControllers[_lastIndex].Dismiss(animated);
@@ -28,7 +26,6 @@ namespace UIKit
             viewController.Present(animated);
         }
 
-        [UsedImplicitly]
         public ViewController Pop(bool animated = true)
         {
             if (_viewControllers.Count == 0) return null;
@@ -46,7 +43,6 @@ namespace UIKit
             return vc;
         }
         
-        [UsedImplicitly]
         public void Present(bool animated = true)
         {
             if (_viewControllers.Count == 0) return;
@@ -54,7 +50,6 @@ namespace UIKit
             presentingViewController.Present(animated);            
         }
 
-        [UsedImplicitly]
         public void Dismiss(bool animated = true)
         {
             isBeingPresented = false;

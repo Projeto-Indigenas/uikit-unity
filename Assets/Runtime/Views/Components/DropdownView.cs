@@ -3,6 +3,7 @@ using TMPro;
 using UIKit.Components;
 using UIKit.Extensions;
 using UnityEngine;
+using static System.Collections.Specialized.BitVector32;
 
 namespace UIKit
 {
@@ -13,7 +14,7 @@ namespace UIKit
         
         private TMP_Dropdown _dropdown = default;
 
-        public Action<ADropdownOption> action { get; set; }
+        public Action<ADropdownOption> onValueChanged;
 
         public void SetOptions(ADropdownOption[] options) => _dropdown.options = options.Map(_mapper).AsList();
 
@@ -26,7 +27,18 @@ namespace UIKit
 
         private void OnDestroy() => _dropdown.onValueChanged.RemoveAllListeners();
 
-        private void ValueChangedAction(int index) => action.Invoke((ADropdownOption) _dropdown.options[index]);
+        private void ValueChangedAction(int index) => onValueChanged.Invoke((ADropdownOption) _dropdown.options[index]);
+
+
+#region IComponentAction<ADropdownOption>
+
+        Action<ADropdownOption> IComponentAction<ADropdownOption>.action 
+        {
+            get => onValueChanged;
+            set => onValueChanged = value;
+        }
+
+        #endregion
     }
 
     public abstract class ADropdownOption : TMP_Dropdown.OptionData

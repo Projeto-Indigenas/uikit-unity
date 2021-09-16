@@ -1,5 +1,4 @@
 ﻿using System;
-using JetBrains.Annotations;
 using UIKit.Components;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,10 +10,10 @@ namespace UIKit
     {
         private Button _button = default;
 
-        [UsedImplicitly] public Action action { get; set; }
-        
+        public Action onButtonAction { get; private set; } = default;
+
         #region Life cycle
-        
+
         protected override void Awake()
         {
             base.Awake();
@@ -26,6 +25,16 @@ namespace UIKit
 
         #endregion
 
-        private void InvokeAction() => action?.Invoke();
+        #region IComponentAction
+
+        Action IComponentAction.action
+        {
+            get => onButtonAction;
+            set => onButtonAction = value;
+        }
+
+        #endregion
+
+        private void InvokeAction() => onButtonAction?.Invoke();
     }
 }

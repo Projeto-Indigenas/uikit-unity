@@ -19,12 +19,8 @@ namespace UIKit.Components
     public class ComponentBinding<TComponent> : ComponentBinding
         where TComponent : View
     {
-#pragma warning disable IDE0044 // Add readonly modifier
-#pragma warning disable IDE0051 // Remove unused private members
         [SerializeField] private UnityEngine.Object _target = default;
         [SerializeField] private string _methodName = default;
-#pragma warning restore IDE0051 // Remove unused private members
-#pragma warning restore IDE0044 // Add readonly modifier
 
         public new TComponent view => (TComponent)_view;
     }
