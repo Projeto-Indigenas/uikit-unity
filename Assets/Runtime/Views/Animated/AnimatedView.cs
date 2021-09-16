@@ -81,14 +81,22 @@ namespace UIKit.Animated
             _viewController?.ViewWillAppearCall(animated);
             _canvasGroup.blocksRaycasts = true;
         }
-        
-        private void ViewDidAppearInternal(bool animated) => _viewController?.ViewDidAppearCall(animated);
 
-        private void ViewWillDisappearInternal(bool animated) => _viewController?.ViewWillDisappearCall(animated);
-        
-        private void ViewDidDisappearInternal(bool animated)
+        private void ViewDidAppearInternal(bool animated)
+        {
+            if (!animated) _canvasGroup.alpha = 1F;
+            _viewController?.ViewDidAppearCall(animated);
+        }
+
+        private void ViewWillDisappearInternal(bool animated)
         {
             _canvasGroup.blocksRaycasts = false;
+            _viewController?.ViewWillDisappearCall(animated);
+        }
+
+        private void ViewDidDisappearInternal(bool animated)
+        {
+            if (!animated) _canvasGroup.alpha = 0F;
             _viewController?.ViewDidDisappearCall(animated);
         }
 
