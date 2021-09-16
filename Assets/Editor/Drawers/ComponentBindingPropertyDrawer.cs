@@ -221,17 +221,23 @@ namespace UIKit.Editor.Drawers
                     methodsSignatures.Add(methodSignature);
                     methodsNames.Add(methodName);
 
-                    if (string.Equals(methodName, GetMethodNameFieldValue()))
-                    {
-                        _selectedMethodIndex = index + 1;
-                    }
-
                     break;
                 }
             }
 
             _allMethodsNames = methodsNames.ToArray();
             _allMethodsSignatures = methodsSignatures.ToArray();
+
+            string currentMethodNameValue = GetMethodNameFieldValue();
+
+            for (int index = 0; index < _allMethodsNames.Length; index++)
+            {
+                string methodName = _allMethodsNames[index];
+
+                if (!methodName.Equals(currentMethodNameValue)) continue;
+                    
+                _selectedMethodIndex = index;
+            }
         }
 
         private void SetViewPropertyValue(Component view)

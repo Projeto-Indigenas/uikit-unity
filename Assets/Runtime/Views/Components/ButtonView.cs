@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using UIKit.Components;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,11 +7,11 @@ using UnityEngine.UI;
 namespace UIKit
 {
     [RequireComponent(typeof(Button))]
-    public class ButtonView : View, IComponentAction
+    public class ButtonView : View, IComponentAction, IComponentActionSetup
     {
         private Button _button = default;
 
-        public Action onButtonAction { get; private set; } = default;
+        public event Action onButtonAction;
 
         #region Life cycle
 
@@ -27,10 +28,20 @@ namespace UIKit
 
         #region IComponentAction
 
-        Action IComponentAction.action
+        event Action IComponentAction.action
         {
-            get => onButtonAction;
-            set => onButtonAction = value;
+            add => onButtonAction += value;
+            remove => onButtonAction -= value;
+        }
+
+        #endregion
+
+        #region IComponentActionSetup
+
+        void IComponentActionSetup.SetupAction(UnityEngine.Object target, MethodInfo info)
+        {
+            Action action = (Action)info.CreateDelegate(typeof(Action), target);
+            onButtonAction += action;
         }
 
         #endregion

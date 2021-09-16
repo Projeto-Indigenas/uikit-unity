@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using TMPro;
 using UIKit.Components;
 using UnityEngine;
@@ -6,7 +7,7 @@ using UnityEngine;
 namespace UIKit
 {
     [RequireComponent(typeof(TMP_InputField))]
-    public class InputFieldView : View, IComponentAction<string>
+    public class InputFieldView : View, IComponentAction<string>, IComponentActionSetup
     {
         private TMP_InputField _inputField = default;
 
@@ -16,7 +17,7 @@ namespace UIKit
             set => _inputField.text = value;
         }
 
-        public Action<string> onEndEditing;
+        public event Action<string> onEndEditing;
 
         #region Life cycle
 
@@ -32,10 +33,20 @@ namespace UIKit
 
         #region IComponentAction<string>
 
-        Action<string> IComponentAction<string>.action
+        event Action<string> IComponentAction<string>.action
         {
-            get => onEndEditing;
-            set => onEndEditing = value;
+            add => onEndEditing += value;
+            remove => onEndEditing -= value;
+        }
+
+        #endregion
+
+        #region IComponentActionSetup
+
+        void IComponentActionSetup.SetupAction(UnityEngine.Object target, MethodInfo info)
+        {
+            Action<string> action = (Action<string>)info.CreateDelegate(typeof(Action<string>), target);
+            onEndEditing += action;
         }
 
         #endregion

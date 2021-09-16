@@ -1,14 +1,20 @@
 ﻿using System;
+using System.Reflection;
 
 namespace UIKit.Components
 {
     public interface IComponentAction
     {
-        Action action { get; set; }
+        event Action action;
     }
 
     public interface IComponentAction<TParameter>
     {
-        Action<TParameter> action { get; set; }
+        event Action<TParameter> action;
+    }
+
+    internal interface IComponentActionSetup
+    {
+        void SetupAction(UnityEngine.Object target, MethodInfo info);
     }
 }

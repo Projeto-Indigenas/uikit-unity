@@ -21,7 +21,7 @@ namespace UIKit
 
         private IAnimatedView _animatedViewInterface = default;
 
-        [field: NonSerialized] protected AAnimatedView view { get; private set; } = default;
+        [field: NonSerialized] protected View view { get; private set; } = default;
         
         [field: NonSerialized] public NavigationController navigationController { get; private set; }
 
@@ -69,20 +69,22 @@ namespace UIKit
         protected virtual void Awake()
         {
             Transform thisTransform = transform;
+            
             if (thisTransform.childCount == 0)
             {
                 Debug.LogError($"{this} MUST have 1 child view GameObject. ViewController's transform path: {gameObject.GetFullPath()}");
                 return;
             }
-            view = thisTransform.GetChild(0).GetComponent<AAnimatedView>();
-            _animatedViewInterface = view;
-            _animatedViewInterface.SetViewController(this);
-            
+
+            view = thisTransform.GetChild(0).GetComponent<View>();
+            _animatedViewInterface = view as IAnimatedView;
+            if (_animatedViewInterface != null) _animatedViewInterface.SetViewController(this);
+
             ViewDidLoad();
 
-            if (_visibleWhenFirstLoaded) return;
+            if (_visibleWhenFirstLoaded || _animatedViewInterface == null) return;
 
-            view.Hide(false);
+            _animatedViewInterface.Hide(false);
         }
 
         #endregion
