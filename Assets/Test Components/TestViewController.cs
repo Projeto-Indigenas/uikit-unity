@@ -13,15 +13,15 @@ namespace UIKitTests
         [SerializeField] private ComponentBinding<DropdownView> _dropdownViewBinding = default;
 
         [ComponentAction]
-        private void NoParametersMethod()
+        private void ParameterlessMethod()
         {
             Debug.Log("This is automatically assigned");
         }
 
         [ComponentAction]
-        private void ParameterizedMethod(ADropdownOption selectedOption)
+        private void DropdownAction(ADropdownOption selectedOption)
         {
-
+            Debug.Log("");
         }
 
         [ComponentAction]

@@ -6,7 +6,7 @@ using UnityEngine;
 namespace UIKit
 {
     [RequireComponent(typeof(TMP_InputField))]
-    public class InputFieldView : AView, IComponentAction<string>
+    public class InputFieldView : View, IComponentAction<string>
     {
         private TMP_InputField _inputField = default;
 

@@ -13,9 +13,11 @@ namespace UIKit.Editor.Drawers
     [CustomPropertyDrawer(typeof(ComponentBinding), true)]
     class ComponentBindingPropertyDrawer : PropertyDrawer
     {
-        public static bool draw = default;
-
         private const float _height = 50F;
+
+        private static GUIStyle _whiteLargeLabel = default;
+
+        public static bool draw = default;
 
         private ComponentBinding _binding = default;
         private Type _bindingGenericType = default;
@@ -23,12 +25,13 @@ namespace UIKit.Editor.Drawers
         private FieldInfo _propertyFieldInfo = default;
         private Component[] _allComponents = default;
         private string[] _availableComponents = default;
-        private int _selectedComponentIndex = 0;
+        private int _selectedComponentIndex = default;
 
         private SerializedProperty _targetProperty = default;
         private FieldInfo _methodNameFieldInfo = default;
-        private string[] _allMethods = default;
-        private int _selectedMethodIndex = 0;
+        private string[] _allMethodsNames = default;
+        private string[] _allMethodsSignatures = default;
+        private int _selectedMethodIndex = default;
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
@@ -46,6 +49,13 @@ namespace UIKit.Editor.Drawers
         {
             if (!draw) return;
 
+            if (_whiteLargeLabel == null)
+            {
+                _whiteLargeLabel = new GUIStyle(EditorStyles.whiteLargeLabel);
+                _whiteLargeLabel.fontStyle = FontStyle.Bold;
+                _whiteLargeLabel.fontSize = 18;
+            }
+
             if (_availableComponents == null)
             {
                 InitialSetup(property);
@@ -56,12 +66,8 @@ namespace UIKit.Editor.Drawers
             float columnX = position.x + 2F;
             float columnWidth = position.width * .3F;
 
-            Rect movingRect = new Rect(columnX, position.y, columnWidth, _height * .5F);
-            EditorGUI.LabelField(movingRect, "Property Name: ", EditorStyles.boldLabel);
-            
-            movingRect.x += movingRect.width;
-            movingRect.width = position.width - movingRect.width - 6F;
-            EditorGUI.LabelField(movingRect, property.displayName);
+            Rect movingRect = new Rect(columnX, position.y, position.width - 6F, _height * .5F);
+            EditorGUI.LabelField(movingRect, property.displayName, _whiteLargeLabel);
             
             movingRect.y += _height * .5F;
             movingRect.x = columnX;
@@ -69,6 +75,7 @@ namespace UIKit.Editor.Drawers
             EditorGUI.LabelField(movingRect, "Bound to: ", EditorStyles.boldLabel);
             
             movingRect.x += movingRect.width;
+            movingRect.y += 4F;
             movingRect.width = position.width - movingRect.width - 6F;
             int newSelection = EditorGUI.Popup(movingRect, _selectedComponentIndex, _availableComponents);
 
@@ -102,9 +109,7 @@ namespace UIKit.Editor.Drawers
                 movingRect.y += 2F;
                 movingRect.width = position.width - movingRect.width - 6F;
                 movingRect.height = _height * 0.5F;
-                _targetProperty.objectReferenceValue = EditorGUI.ObjectField(
-                    movingRect, "", _targetProperty.objectReferenceValue, 
-                    typeof(ViewController), true);
+                EditorGUI.ObjectField(movingRect, _targetProperty, typeof(ViewController), GUIContent.none);
                 
                 if (EditorGUI.EndChangeCheck() && _targetProperty.serializedObject.ApplyModifiedProperties())
                 {
@@ -121,14 +126,14 @@ namespace UIKit.Editor.Drawers
                 movingRect.y += 4F;
                 movingRect.x += movingRect.width;
                 movingRect.width = position.width - movingRect.width - 6F;
-                newSelection = EditorGUI.Popup(movingRect, _selectedMethodIndex, _allMethods);
+                newSelection = EditorGUI.Popup(movingRect, _selectedMethodIndex, _allMethodsSignatures);
 
                 if (newSelection != _selectedMethodIndex)
                 {
                     _selectedMethodIndex = newSelection;
 
                     if (newSelection == 0) SetMethodNameFieldValue(null);
-                    else SetMethodNameFieldValue(_allMethods[newSelection]);
+                    else SetMethodNameFieldValue(_allMethodsNames[newSelection]);
 
                     EditorUtility.SetDirty(property.serializedObject.targetObject);
                 }
@@ -137,9 +142,6 @@ namespace UIKit.Editor.Drawers
 
         private void InitialSetup(SerializedProperty property)
         {
-            _targetProperty = property.FindPropertyRelative("_target");
-            if (_targetProperty != null) SetupMethods(_targetProperty.objectReferenceValue);
-
             MonoBehaviour targetObject = (MonoBehaviour)property.serializedObject.targetObject;
 
             Type parentType = targetObject.GetType();
@@ -147,6 +149,10 @@ namespace UIKit.Editor.Drawers
             if (_propertyFieldInfo.FieldType.GenericTypeArguments.Length > 0)
             {
                 _bindingGenericType = _propertyFieldInfo.FieldType.GenericTypeArguments[0];
+            }
+            else
+            {
+                _bindingGenericType = typeof(View);
             }
 
             _binding = (ComponentBinding)_propertyFieldInfo.GetValue(property.serializedObject.targetObject);
@@ -175,6 +181,9 @@ namespace UIKit.Editor.Drawers
             }
 
             _availableComponents = availableOptions.ToArray();
+
+            _targetProperty = property.FindPropertyRelative("_target");
+            if (_targetProperty != null) SetupMethods(_targetProperty.objectReferenceValue);
         }
 
         private void SetupMethods(UnityEngine.Object targetObject)
@@ -188,25 +197,35 @@ namespace UIKit.Editor.Drawers
                 methods = parentType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             }
 
-            List<string> availableOptions = new List<string>() { "None" };
+            List<string> methodsNames = new List<string>() { "None" };
+            List<string> methodsSignatures = new List<string> { "None" };
 
             Type customAttributeType = typeof(ComponentActionAttribute);
             for (int index = 0; index < methods.Length; index++)
             {
                 MethodInfo info = methods[index];
+
+                string methodSignature = GetFullMethodSignature(info);
+                string methodName = info.Name;
+
                 foreach (CustomAttributeData data in info.CustomAttributes)
                 {
                     if (!customAttributeType.Name.Equals(data.AttributeType.Name)) continue;
 
-                    availableOptions.Add($"{info.DeclaringType.Name}::{info.Name}");
+                    methodsSignatures.Add(methodSignature);
+                    methodsNames.Add(methodName);
 
-                    _selectedMethodIndex = index + 1;
+                    if (string.Equals(methodName, GetMethodNameFieldValue()))
+                    {
+                        _selectedMethodIndex = index + 1;
+                    }
 
                     break;
                 }
             }
 
-            _allMethods = availableOptions.ToArray();
+            _allMethodsNames = methodsNames.ToArray();
+            _allMethodsSignatures = methodsSignatures.ToArray();
         }
 
         private void SetViewPropertyValue(Component view)
@@ -214,9 +233,33 @@ namespace UIKit.Editor.Drawers
             _viewPropertyInfo.SetValue(_binding, view);
         }
 
+        private string GetMethodNameFieldValue()
+        {
+            return (string)_methodNameFieldInfo.GetValue(_binding);
+        }
+
         private void SetMethodNameFieldValue(string methodName)
         {
             _methodNameFieldInfo.SetValue(_binding, methodName);
+        }
+
+        private string GetFullMethodSignature(MethodInfo methodInfo)
+        {
+            string name = methodInfo.Name;
+            ParameterInfo[] parameters = methodInfo.GetParameters();
+            if (parameters.Length > 0)
+            {
+                name += "(";
+                for (int index = 0; index < parameters.Length; index++)
+                {
+                    ParameterInfo parameter = parameters[index];
+                    name += parameter.ParameterType.Name;
+                    if (index < parameters.Length - 1) name += ",";
+                }
+                name += ")";
+            }
+            else name += "(void)";
+            return name;
         }
 
         private Color GetColor()

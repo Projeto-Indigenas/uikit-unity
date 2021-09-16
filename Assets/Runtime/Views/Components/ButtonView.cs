@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace UIKit
 {
     [RequireComponent(typeof(Button))]
-    public class ButtonView : AView, IComponentAction
+    public class ButtonView : View, IComponentAction
     {
         private Button _button = default;
 

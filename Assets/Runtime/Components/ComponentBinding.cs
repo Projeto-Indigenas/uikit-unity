@@ -6,9 +6,9 @@ namespace UIKit.Components
     [Serializable]
     public class ComponentBinding
     {
-        [SerializeField] protected AView _view;
+        [SerializeField] protected View _view;
 
-        public AView view
+        public View view
         {
             get => _view;
             private set => _view = value;
@@ -17,7 +17,7 @@ namespace UIKit.Components
 
     [Serializable]
     public class ComponentBinding<TComponent> : ComponentBinding
-        where TComponent : AView
+        where TComponent : View
     {
 #pragma warning disable IDE0044 // Add readonly modifier
 #pragma warning disable IDE0051 // Remove unused private members

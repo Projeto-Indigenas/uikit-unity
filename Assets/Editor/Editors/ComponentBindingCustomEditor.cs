@@ -39,6 +39,7 @@ namespace UIKit.Editor.Editors
             ComponentBindingPropertyDrawer.draw = true;
             for (int index = 0; index < _componentBindings.Length; index++)
             {
+                EditorGUILayout.Separator();
                 SerializedProperty property = _componentBindings[index];
                 _ = EditorGUILayout.PropertyField(property);
             }

@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace UIKit
 {
     [RequireComponent(typeof(Slider))]
-    public class SliderView : AView
+    public class SliderView : View
     {
         private Slider _slider = default;
 

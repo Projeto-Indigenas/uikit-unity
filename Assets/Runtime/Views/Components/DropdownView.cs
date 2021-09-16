@@ -7,7 +7,7 @@ using UnityEngine;
 namespace UIKit
 {
     [RequireComponent(typeof(TMP_Dropdown))]
-    public class DropdownView : AView, IComponentAction<ADropdownOption>
+    public class DropdownView : View, IComponentAction<ADropdownOption>
     {
         private static readonly Func<ADropdownOption, TMP_Dropdown.OptionData> _mapper = each => each;
         
