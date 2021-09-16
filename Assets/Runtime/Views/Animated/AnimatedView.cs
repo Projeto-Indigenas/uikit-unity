@@ -84,7 +84,7 @@ namespace UIKit.Animated
 
         private void ViewDidAppearInternal(bool animated)
         {
-            if (!animated) _canvasGroup.alpha = 1F;
+            if (!animated) _animator.Play(_showAnimState, _defaultUILayer, 1F);
             _viewController?.ViewDidAppearCall(animated);
         }
 
@@ -96,7 +96,7 @@ namespace UIKit.Animated
 
         private void ViewDidDisappearInternal(bool animated)
         {
-            if (!animated) _canvasGroup.alpha = 0F;
+            if (!animated) _animator.Play(_hideAnimState, _defaultUILayer, 1F);
             _viewController?.ViewDidDisappearCall(animated);
         }
 
