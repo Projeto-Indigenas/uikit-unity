@@ -17,6 +17,7 @@ namespace UIKit
     }
 
     [RequireComponent(typeof(Canvas), typeof(CanvasScaler))]
+    [DefaultExecutionOrder(1)]
     public abstract class ViewController : MonoBehaviour, IViewController
     {
         private IAnimatedView _animatedViewInterface = default;

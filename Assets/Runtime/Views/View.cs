@@ -9,6 +9,7 @@ namespace UIKit
         void Hide();
     }
 
+    [DefaultExecutionOrder(0)]
     public abstract class View : MonoBehaviour, IView
     {
         protected IViewController _viewController = default;
