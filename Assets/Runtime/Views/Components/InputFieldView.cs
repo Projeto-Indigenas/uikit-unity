@@ -1,11 +1,12 @@
 ﻿using System;
 using TMPro;
+using UIKit.Components;
 using UnityEngine;
 
 namespace UIKit
 {
     [RequireComponent(typeof(TMP_InputField))]
-    public class InputFieldView : View
+    public class InputFieldView : AView, IComponentAction<string>
     {
         private TMP_InputField _inputField = default;
 
@@ -15,7 +16,7 @@ namespace UIKit
             set => _inputField.text = value;
         }
         
-        public Action<string> didEndEditing { get; set; }
+        public Action<string> action { get; set; }
 
         #region Life cycle
 
@@ -29,6 +30,6 @@ namespace UIKit
 
         #endregion
 
-        private void OnEndEdit(string newValue) => didEndEditing?.Invoke(newValue);
+        private void OnEndEdit(string newValue) => action?.Invoke(newValue);
     }
 }

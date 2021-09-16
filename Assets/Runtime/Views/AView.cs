@@ -11,7 +11,7 @@ namespace UIKit
 
     [DefaultExecutionOrder(0)]
     [RequireComponent(typeof(CanvasGroup))]
-    public abstract class View : MonoBehaviour, IView
+    public abstract class AView : MonoBehaviour, IView
     {
         protected IViewController _viewController = default;
         protected CanvasGroup _canvasGroup = default;

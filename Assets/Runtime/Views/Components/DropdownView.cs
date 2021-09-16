@@ -1,23 +1,21 @@
 using System;
-using System.Collections.Generic;
-using JetBrains.Annotations;
 using TMPro;
+using UIKit.Components;
 using UIKit.Extensions;
 using UnityEngine;
 
 namespace UIKit
 {
     [RequireComponent(typeof(TMP_Dropdown))]
-    public class DropdownView : View
+    public class DropdownView : AView, IComponentAction<ADropdownOption>
     {
-        private static readonly Func<DropdownOption, TMP_Dropdown.OptionData> _mapper = each => each;
+        private static readonly Func<ADropdownOption, TMP_Dropdown.OptionData> _mapper = each => each;
         
         private TMP_Dropdown _dropdown = default;
 
-        [UsedImplicitly] public Action<DropdownOption> onValueChanged; 
+        public Action<ADropdownOption> action { get; set; }
 
-        [UsedImplicitly]
-        public void SetOptions(DropdownOption[] options) => _dropdown.options = options.Map(_mapper).AsList();
+        public void SetOptions(ADropdownOption[] options) => _dropdown.options = options.Map(_mapper).AsList();
 
         protected override void Awake()
         {
@@ -28,17 +26,17 @@ namespace UIKit
 
         private void OnDestroy() => _dropdown.onValueChanged.RemoveAllListeners();
 
-        private void ValueChangedAction(int index) => onValueChanged.Invoke((DropdownOption) _dropdown.options[index]);
+        private void ValueChangedAction(int index) => action.Invoke((ADropdownOption) _dropdown.options[index]);
     }
 
-    public abstract class DropdownOption : TMP_Dropdown.OptionData
+    public abstract class ADropdownOption : TMP_Dropdown.OptionData
     {
-        protected DropdownOption(string text = null, Sprite image = null) : base(text, image) { }
+        protected ADropdownOption(string text = null, Sprite image = null) : base(text, image) { }
     }
 
-    public class DropdownOption<TValue> : DropdownOption
+    public class DropdownOption<TValue> : ADropdownOption
     {
-        [UsedImplicitly] public readonly TValue value;
+        public readonly TValue value;
 
         public DropdownOption(TValue value, string text, Sprite image = null) : base(text, image) 
             => this.value = value;

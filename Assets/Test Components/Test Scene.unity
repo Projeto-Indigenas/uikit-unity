@@ -341,7 +341,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _visibleWhenFirstLoaded: 0
   _navigationButtonBinding:
-    _view: {fileID: 1481609382}
+    _view: {fileID: 0}
+    _target: {fileID: 0}
+    _methodName: 
 --- !u!1 &1249982984
 GameObject:
   m_ObjectHideFlags: 0

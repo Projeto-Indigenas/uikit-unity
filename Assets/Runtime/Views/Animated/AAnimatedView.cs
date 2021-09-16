@@ -10,7 +10,7 @@ namespace UIKit.Animated
     }
     
     [RequireComponent(typeof(CanvasGroup), typeof(Animator), typeof(ViewAnimationEventsReceiver))]
-    public abstract class AnimatedView : View, IAnimatedView, IViewAnimationEventsReceiverListener
+    public abstract class AAnimatedView : AView, IAnimatedView, IViewAnimationEventsReceiverListener
     {
         private static readonly Layer _defaultUILayer = new Layer(0, "Default UI Layer");
         private static readonly State _showAnimState = new State("Show", _defaultUILayer);

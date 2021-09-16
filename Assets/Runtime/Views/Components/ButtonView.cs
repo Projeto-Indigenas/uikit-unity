@@ -1,12 +1,13 @@
 ﻿using System;
 using JetBrains.Annotations;
+using UIKit.Components;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace UIKit
 {
     [RequireComponent(typeof(Button))]
-    public class ButtonView : View
+    public class ButtonView : AView, IComponentAction
     {
         private Button _button = default;
 

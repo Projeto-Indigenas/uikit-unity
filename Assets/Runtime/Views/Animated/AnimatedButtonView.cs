@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace UIKit.Animated
 {
     [RequireComponent(typeof(Button))]
-    public class AnimatedButtonView : AnimatedView
+    public class AnimatedButtonView : AAnimatedView
     {
         private Button _button = default;
 
