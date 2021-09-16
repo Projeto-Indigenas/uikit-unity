@@ -15,7 +15,7 @@ namespace UIKit
             set => _slider.value = value;
         }
         
-        public Action<float> valueDidChanged { get; set; }
+        public Action<float> valueDidChange { get; set; }
 
         #region Life cycle
 
@@ -29,7 +29,7 @@ namespace UIKit
 
         private void OnDestroy() => _slider.onValueChanged.RemoveAllListeners();
 
-        private void OnValueChanged(float newValue) => valueDidChanged?.Invoke(newValue);
+        private void OnValueChanged(float newValue) => valueDidChange?.Invoke(newValue);
 
         #endregion
     }
