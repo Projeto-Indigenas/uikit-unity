@@ -1,6 +1,5 @@
 ﻿using UIKit.Animated.Models;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace UIKit.Animated
 {
@@ -10,8 +9,7 @@ namespace UIKit.Animated
         void Hide(bool animated);
     }
     
-    [RequireComponent(typeof(Canvas), typeof(CanvasGroup), typeof(GraphicRaycaster))]
-    [RequireComponent(typeof(Animator), typeof(ViewAnimationEventsReceiver))]
+    [RequireComponent(typeof(CanvasGroup), typeof(Animator), typeof(ViewAnimationEventsReceiver))]
     public abstract class AnimatedView : View, IAnimatedView, IViewAnimationEventsReceiverListener
     {
         private static readonly Layer _defaultUILayer = new Layer(0, "Default UI Layer");
@@ -81,7 +79,7 @@ namespace UIKit.Animated
         private void ViewWillAppearInternal(bool animated)
         {
             _viewController?.ViewWillAppearCall(animated);
-            _canvas.enabled = true;
+            _canvasGroup.blocksRaycasts = true;
         }
         
         private void ViewDidAppearInternal(bool animated) => _viewController?.ViewDidAppearCall(animated);
@@ -90,7 +88,7 @@ namespace UIKit.Animated
         
         private void ViewDidDisappearInternal(bool animated)
         {
-            _canvas.enabled = false;
+            _canvasGroup.blocksRaycasts = false;
             _viewController?.ViewDidDisappearCall(animated);
         }
 

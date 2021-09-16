@@ -10,14 +10,15 @@ namespace UIKit
     }
 
     [DefaultExecutionOrder(0)]
+    [RequireComponent(typeof(CanvasGroup))]
     public abstract class View : MonoBehaviour, IView
     {
         protected IViewController _viewController = default;
-        protected Canvas _canvas = default;
+        protected CanvasGroup _canvasGroup = default;
         
         #region Life cycle
 
-        protected virtual void Awake() => _canvas = GetComponent<Canvas>();
+        protected virtual void Awake() => _canvasGroup = GetComponent<CanvasGroup>();
 
         #endregion
 
@@ -36,7 +37,7 @@ namespace UIKit
             if (visible) _viewController?.ViewWillAppearCall(false);
             else _viewController?.ViewWillDisappearCall(false);
             
-            _canvas.enabled = visible;
+            _canvasGroup.blocksRaycasts = visible;
             
             if (visible) _viewController?.ViewDidAppearCall(false);
             else _viewController?.ViewDidDisappearCall(false);
