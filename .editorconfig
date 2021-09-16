@@ -2,3 +2,6 @@
 
 # IDE0053: Use block body for lambda expressions
 csharp_style_expression_bodied_lambdas = when_on_single_line
+
+# IDE1006: Naming Styles
+dotnet_diagnostic.IDE1006.severity = none
