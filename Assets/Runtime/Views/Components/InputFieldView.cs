@@ -15,7 +15,7 @@ namespace UIKit
             set => _inputField.text = value;
         }
         
-        public Action<string> DidEndEditing { get; set; }
+        public Action<string> didEndEditing { get; set; }
 
         #region Life cycle
 
@@ -29,6 +29,6 @@ namespace UIKit
 
         #endregion
 
-        private void OnEndEdit(string newValue) => DidEndEditing?.Invoke(newValue);
+        private void OnEndEdit(string newValue) => didEndEditing?.Invoke(newValue);
     }
 }
