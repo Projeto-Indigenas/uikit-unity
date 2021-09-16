@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# IDE0053: Use block body for lambda expressions
+csharp_style_expression_bodied_lambdas = when_on_single_line
