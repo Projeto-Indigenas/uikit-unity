@@ -3,7 +3,6 @@ using JetBrains.Annotations;
 using UIKit.Animated;
 using UIKit.Extensions;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace UIKit
 {
@@ -16,10 +15,11 @@ namespace UIKit
         void ViewDidDisappearCall(bool animated);
     }
 
-    [RequireComponent(typeof(Canvas), typeof(CanvasScaler))]
     [DefaultExecutionOrder(1)]
     public abstract class ViewController : MonoBehaviour, IViewController
     {
+        [SerializeField] private bool _visibleWhenFirstLoaded = default;
+
         private IAnimatedView _animatedViewInterface = default;
 
         [field: NonSerialized] protected AnimatedView view { get; private set; } = default;
@@ -86,6 +86,10 @@ namespace UIKit
             _animatedViewInterface.SetViewController(this);
             
             ViewDidLoad();
+
+            if (_visibleWhenFirstLoaded) return;
+
+            view.Hide(false);
         }
 
         #endregion
@@ -108,9 +112,9 @@ namespace UIKit
 
         protected override void ViewDidLoad()
         {
-            base.ViewDidLoad();
-            
             view = base.view as TView;
+
+            base.ViewDidLoad();
         }
     }
 }
