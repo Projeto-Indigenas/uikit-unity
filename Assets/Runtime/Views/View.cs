@@ -36,7 +36,8 @@ namespace UIKit
         {
             if (visible) _viewController?.ViewWillAppearCall(false);
             else _viewController?.ViewWillDisappearCall(false);
-            
+
+            _canvasGroup.alpha = visible ? 1F : 0F;
             _canvasGroup.blocksRaycasts = visible;
             
             if (visible) _viewController?.ViewDidAppearCall(false);
