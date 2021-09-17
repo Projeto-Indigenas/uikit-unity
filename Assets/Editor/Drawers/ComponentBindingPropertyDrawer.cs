@@ -286,14 +286,16 @@ namespace UIKit.Editor.Drawers
 
         private static string GetComponentPath(Transform transform, Transform root)
         {
-            string path = transform.name;
-            Transform parent = transform;
-            while (parent != null && parent != root)
+            Transform current = transform;
+            string name = transform.name;
+            do
             {
-                parent = parent.parent;
-                path = $"{parent.name}/{path}";
+                current = current.parent;
+                if (current == null) break;
+                name = $"{current.name}/{name}";
             }
-            return path;
+            while (current && current != root);
+            return name;
         }
 
         private bool IsComponentAction()
