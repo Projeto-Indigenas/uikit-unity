@@ -155,7 +155,7 @@ namespace UIKit.Editor.Drawers
 
             _binding = (ComponentBinding)_propertyFieldInfo.GetValue(property.serializedObject.targetObject);
             Type componentBindingType = typeof(ComponentBinding);
-            _viewPropertyInfo = componentBindingType.GetProperty("view", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            _viewPropertyInfo = componentBindingType.GetProperty("target", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             componentBindingType = _binding.GetType();
             _methodNameFieldInfo = componentBindingType.GetField("_methodName", BindingFlags.Instance | BindingFlags.NonPublic);
 
@@ -172,7 +172,7 @@ namespace UIKit.Editor.Drawers
                 string path = GetComponentPath(component.transform, targetObject.transform);
                 availableOptions.Add($"{path} ({component.GetType().Name})");
 
-                if (_binding.view == component)
+                if (_binding.target == component)
                 {
                     _selectedComponentIndex = index + 1;
                 }
@@ -180,7 +180,7 @@ namespace UIKit.Editor.Drawers
 
             _availableComponents = availableOptions.ToArray();
 
-            _targetProperty = property.FindPropertyRelative("_target");
+            _targetProperty = property.FindPropertyRelative("_methodTarget");
             if (_targetProperty != null) SetupMethods(_targetProperty.objectReferenceValue);
         }
 
@@ -247,6 +247,8 @@ namespace UIKit.Editor.Drawers
 
         private string GetMethodNameFieldValue()
         {
+            if (_methodNameFieldInfo == null) return null;
+
             return (string)_methodNameFieldInfo.GetValue(_binding);
         }
 

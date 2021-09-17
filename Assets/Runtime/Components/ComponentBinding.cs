@@ -7,12 +7,12 @@ namespace UIKit.Components
     [Serializable]
     public class ComponentBinding
     {
-        [SerializeField] protected View _view;
+        [SerializeField] protected View _target;
 
-        public View view
+        public View target
         {
-            get => _view;
-            private set => _view = value;
+            get => _target;
+            private set => _target = value;
         }
     }
 
@@ -22,10 +22,10 @@ namespace UIKit.Components
     {
         private const BindingFlags _bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        [SerializeField] private UnityEngine.Object _target = default;
+        [SerializeField] private UnityEngine.Object _methodTarget = default;
         [SerializeField] private string _methodName = default;
 
-        public new TComponent view => (TComponent)_view;
+        public new TComponent target => (TComponent)_target;
 
         #region ISerializationCallbackReceiver
 
@@ -36,15 +36,15 @@ namespace UIKit.Components
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
-            if (_target == null || string.IsNullOrEmpty(_methodName)) return;
+            if (_methodTarget == null || string.IsNullOrEmpty(_methodName)) return;
 
-            if (view is IComponentActionSetup setup)
+            if (target is IComponentActionSetup setup)
             {
-                MethodInfo methodInfo = _target.GetType().GetMethod(_methodName, _bindingFlags);
+                MethodInfo methodInfo = _methodTarget.GetType().GetMethod(_methodName, _bindingFlags);
 
                 if (methodInfo == null) return;
 
-                setup.SetupAction(_target, methodInfo);
+                setup.SetupAction(_methodTarget, methodInfo);
             }
         }
 

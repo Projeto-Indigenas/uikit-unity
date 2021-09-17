@@ -935,18 +935,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _visibleWhenFirstLoaded: 0
   _unkownViewTypeBinding:
-    _view: {fileID: 235699220}
+    _target: {fileID: 235699220}
   _inputFieldViewBinding:
-    _view: {fileID: 447229066}
-    _target: {fileID: 792365514}
+    _target: {fileID: 447229066}
+    _methodTarget: {fileID: 792365514}
     _methodName: InputFieldViewAction
   _buttonViewBinding:
-    _view: {fileID: 1481609382}
-    _target: {fileID: 792365514}
+    _target: {fileID: 1481609382}
+    _methodTarget: {fileID: 792365514}
     _methodName: ButtonViewAction
   _dropdownViewBinding:
-    _view: {fileID: 1279706650}
-    _target: {fileID: 792365514}
+    _target: {fileID: 1279706650}
+    _methodTarget: {fileID: 792365514}
     _methodName: DropdownViewAction
 --- !u!222 &792365515
 CanvasRenderer:
