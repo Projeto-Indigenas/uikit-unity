@@ -34,6 +34,8 @@ namespace UIKit.Editor.Editors
         {
             base.OnInspectorGUI();
 
+            if (_componentBindings.Length == 0) return;
+
             EditorGUILayout.Separator();
             EditorGUILayout.LabelField("Component Bindings", EditorStyles.boldLabel);
 
