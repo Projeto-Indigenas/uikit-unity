@@ -2,10 +2,11 @@
 using UIKit.Components;
 using UIKit.Editor.Drawers;
 using UnityEditor;
+using UnityEngine;
 
 namespace UIKit.Editor.Editors
 {
-    [CustomEditor(typeof(ViewController), true)]
+    [CustomEditor(typeof(MonoBehaviour), true)]
     class ComponentBindingCustomEditor : UnityEditor.Editor
     {
         private SerializedProperty[] _componentBindings = default;
