@@ -1,5 +1,4 @@
 ﻿using System;
-using TMPro;
 using UnityEngine;
 
 namespace UIKit
@@ -7,13 +6,16 @@ namespace UIKit
     [Serializable]
     public class DropdownOption
     {
-        public readonly string text;
-        public readonly Sprite image;
+        [SerializeField] private string _text = default;
+        [SerializeField] private Sprite _image = default;
+
+        public string text => _text;
+        public Sprite image => _image;
 
         protected DropdownOption(string text = null, Sprite image = null) 
         {
-            this.text = text;
-            this.image = image;
+            _text = text;
+            _image = image;
         }
     }
 

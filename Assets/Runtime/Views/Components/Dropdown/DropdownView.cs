@@ -12,6 +12,7 @@ namespace UIKit
         [SerializeField] private DropdownOption[] _startOptions = default;
 
         private ADropdown _dropdown = default;
+        private Action<DropdownOption> _lateAction = default;
 
         public event Action<DropdownOption> onValueChanged
         {
@@ -29,8 +30,10 @@ namespace UIKit
             if (tmpDropdown)
             {
                 _dropdown = new DropdownTMP(tmpDropdown);
-
                 _dropdown.SetOptions(_startOptions);
+                _dropdown.onValueChanged += _lateAction;
+
+                _lateAction = null;
 
                 return;
             }
@@ -39,8 +42,10 @@ namespace UIKit
             if (dropdown)
             {
                 _dropdown = new DropdownUI(dropdown);
-
                 _dropdown.SetOptions(_startOptions);
+                _dropdown.onValueChanged += _lateAction;
+
+                _lateAction = null;
 
                 return;
             }
@@ -65,7 +70,15 @@ namespace UIKit
         void IComponentActionSetup.SetupAction(UnityEngine.Object target, MethodInfo info)
         {
             Action<DropdownOption> action = (Action<DropdownOption>)info.CreateDelegate(typeof(Action<DropdownOption>), target);
-            onValueChanged += action;
+            
+            if (_dropdown != null)
+            {
+                _dropdown.onValueChanged += action;
+
+                return;
+            }
+
+            _lateAction = action;
         }
 
         #endregion

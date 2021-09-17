@@ -1540,7 +1540,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aecf5b821f2649659e7060458d5c86e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _startOptions: []
+  _startOptions:
+  - _text: Test 1
+    _image: {fileID: 0}
+  - _text: Test 2
+    _image: {fileID: 0}
+  - _text: Test 3
+    _image: {fileID: 0}
 --- !u!225 &1279706651
 CanvasGroup:
   m_ObjectHideFlags: 0

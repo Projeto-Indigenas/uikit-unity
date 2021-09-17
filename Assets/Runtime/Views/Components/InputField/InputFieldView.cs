@@ -11,16 +11,12 @@ namespace UIKit
     {
         private AInputField _inputField = default;
 
+        private Action<string> _lateAction = default;
+
         public string text
         {
             get => _inputField.text;
             set => _inputField.text = value;
-        }
-
-        public event Action<string> onEndEditing
-        {
-            add => _inputField.onEndEditing += value;
-            remove => _inputField.onEndEditing -= value;
         }
 
         #region Life cycle
@@ -33,6 +29,9 @@ namespace UIKit
             if (tmpInputField)
             {
                 _inputField = new InputFieldTMP(tmpInputField);
+                _inputField.onEndEditing += _lateAction;
+
+                _lateAction = null;
 
                 return;
             }
@@ -41,6 +40,9 @@ namespace UIKit
             if (inputField)
             {
                 _inputField = new InputFieldUI(inputField);
+                _inputField.onEndEditing += _lateAction;
+
+                _lateAction = null;
 
                 return;
             }
@@ -54,8 +56,8 @@ namespace UIKit
 
         event Action<string> IComponentAction<string>.action
         {
-            add => onEndEditing += value;
-            remove => onEndEditing -= value;
+            add => _inputField.onEndEditing += value;
+            remove => _inputField.onEndEditing -= value;
         }
 
         #endregion
@@ -65,7 +67,15 @@ namespace UIKit
         void IComponentActionSetup.SetupAction(UnityEngine.Object target, MethodInfo info)
         {
             Action<string> action = (Action<string>)info.CreateDelegate(typeof(Action<string>), target);
-            onEndEditing += action;
+            
+            if (_inputField != null)
+            {
+                _inputField.onEndEditing += action;
+
+                return;
+            }
+
+            _lateAction = action;
         }
 
         #endregion

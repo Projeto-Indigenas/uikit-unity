@@ -6,6 +6,11 @@ namespace UIKit
     {
         public abstract string text { get; set; }
 
-        public abstract event Action<string> onEndEditing;
+        public event Action<string> onEndEditing;
+
+        protected void OnEndEditing(string newText)
+        {
+            onEndEditing?.Invoke(newText);
+        }
     }
 }
