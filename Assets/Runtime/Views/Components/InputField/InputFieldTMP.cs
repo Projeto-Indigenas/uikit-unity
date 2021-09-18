@@ -16,12 +16,18 @@ namespace UIKit
         public InputFieldTMP(TMP_InputField inputField)
         {
             _inputField = inputField;
-            _inputField.onEndEdit.AddListener(OnEndEditing);
+            _inputField.onEndEdit.AddListener(DidEndEditing);
+            _inputField.onValueChanged.AddListener(ValueDidChange);
+            _inputField.onValidateInput = ValidateInput;
         }
 
         public override void Clear()
         {
+            if (!_inputField) return;
+
             _inputField.onEndEdit.RemoveAllListeners();
+            _inputField.onValueChanged.RemoveAllListeners();
+            _inputField.onValidateInput = null;
         }
     }
 }

@@ -14,6 +14,7 @@ namespace UIKit.Editor.Drawers.Handlers
         private readonly Type _bindingGenericType = default;
         private readonly SerializedProperty _methodNameProperty = default;
         private readonly SerializedProperty _parametersProperty = default;
+        private readonly SerializedProperty _actionTypeProperty = default;
 
         private MethodData[] _methodsNamesAndTargets = default;
         
@@ -21,17 +22,17 @@ namespace UIKit.Editor.Drawers.Handlers
 
         public string[] allMethodsSignatures { get; private set; }
         public int selectedMethodIndex { get; set; }
-        public bool foldout = false;
 
         public ComponentBindingMethodHandler(
             Type bindingGenericType, 
-            SerializedProperty property)
+            SerializedProperty componentActionItem)
         {
             _bindingGenericType = bindingGenericType;
 
-            methodTargetProperty = property.FindPropertyRelative("_methodTarget");
-            _methodNameProperty = property.FindPropertyRelative("_methodName");
-            _parametersProperty = property.FindPropertyRelative("_parameters");
+            methodTargetProperty = componentActionItem.FindPropertyRelative("_methodTarget");
+            _methodNameProperty = componentActionItem.FindPropertyRelative("_methodName");
+            _parametersProperty = componentActionItem.FindPropertyRelative("_parameters");
+            _actionTypeProperty = componentActionItem.FindPropertyRelative("_actionType");
         }
 
         public void SetupMethods(bool isGenericComponentAction)

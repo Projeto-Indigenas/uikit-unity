@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 namespace UIKit
 {
@@ -6,13 +7,15 @@ namespace UIKit
     {
         public abstract string text { get; set; }
 
-        public event Action<string> onEndEditing;
+        public event Action<string> didEndEditing;
+        public event Action<string> valueDidChange;
+        public event Func<string, int, char, char> validateInput;
 
         public abstract void Clear();
 
-        protected void OnEndEditing(string newText)
-        {
-            onEndEditing?.Invoke(newText);
-        }
+        protected void DidEndEditing(string newText) => didEndEditing?.Invoke(newText);
+        protected void ValueDidChange(string newText) => valueDidChange?.Invoke(newText);
+        protected char ValidateInput(string text, int charIndex, char addedChar) 
+            => validateInput.Invoke(text, charIndex, addedChar);
     }
 }

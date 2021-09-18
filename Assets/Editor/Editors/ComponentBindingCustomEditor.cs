@@ -39,14 +39,14 @@ namespace UIKit.Editor.Editors
             EditorGUILayout.Separator();
             EditorGUILayout.LabelField("Component Bindings", EditorStyles.boldLabel);
 
-            ComponentBindingPropertyDrawer.draw = true;
+            ComponentBindingPropertyDrawer.EnableDrawing();
             for (int index = 0; index < _componentBindings.Length; index++)
             {
                 EditorGUILayout.Separator();
                 SerializedProperty property = _componentBindings[index];
                 _ = EditorGUILayout.PropertyField(property);
             }
-            ComponentBindingPropertyDrawer.draw = false;
+            ComponentBindingPropertyDrawer.DisableDrawing();
         }
     }
 }

@@ -1,90 +1,150 @@
-﻿using UIKit.Editor.Drawers.Handlers;
+﻿using System.Collections.Generic;
+using UIKit.Editor.Drawers.Handlers;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace UIKit.Editor.Drawers
 {
-    internal static class ComponentBindingMethodDrawer
+    internal class ComponentBindingMethodDrawer
     {
-        private static GUIStyle _foldoutStyle = default;
+        private const float _elementHeight = 60F;
 
-        public static void OnGUI(
-            ComponentBindingMethodHandler provider,
-            Rect movingRect, 
-            Rect position, 
-            float columnX, 
-            float columnWidth, 
-            float height,
-            float foldoutHeight,
-            bool isGenericComponentAction,
-            ref bool foldout)
+        private static GUIStyle _popupStyle = default;
+
+        private readonly List<ComponentBindingMethodHandler> _methodHandlers = default;
+
+        private ReorderableList _reorderableList = default;
+        private ComponentBindingViewHandler _viewHandler = default;
+        private SerializedProperty _componentActionsProperty = default;
+
+        public float height => _reorderableList.GetHeight();
+
+        public ComponentBindingMethodDrawer(
+            ComponentBindingViewHandler viewHandler,
+            SerializedProperty componentActionsProperty)
         {
-            if (_foldoutStyle == null)
+            _viewHandler = viewHandler;
+            _componentActionsProperty = componentActionsProperty;
+
+            _methodHandlers = new List<ComponentBindingMethodHandler>();
+            FillMethodHandlers(viewHandler, componentActionsProperty);
+
+            _reorderableList = new ReorderableList(_methodHandlers, typeof(ComponentBindingMethodHandler));
+            _reorderableList.onAddCallback = AddListElement;
+            _reorderableList.onRemoveCallback = RemoveListElement;
+            _reorderableList.elementHeightCallback = GetElementHeight;
+            _reorderableList.drawElementCallback = DrawListElement;
+
+            if (_popupStyle == null)
             {
-                _foldoutStyle = new GUIStyle(EditorStyles.foldoutHeader)
+                _popupStyle = new GUIStyle(EditorStyles.popup)
                 {
-                    fontSize = 14
+                    fontStyle = FontStyle.Bold,
                 };
             }
+        }
 
-            movingRect.x = position.x + 14F;
-            movingRect.y += height * .4F;
-            movingRect.width = position.width;
-            movingRect.height = foldoutHeight;
+        public void Draw(Rect movingRect) => _reorderableList.DoList(movingRect);
 
-            foldout = EditorGUI.BeginFoldoutHeaderGroup(movingRect, foldout, "ComponentAction Bindings", _foldoutStyle);
+        private float GetElementHeight(int index)
+        {
+            return _elementHeight;
+        }
 
-            if (foldout)
+        private void DrawListElement(Rect rect, int index, bool isActive, bool isFocused)
+        {
+            ComponentBindingMethodHandler methodHandler = _methodHandlers[index];
+
+            float columnX = rect.x + 2F;
+            float columnWidth = rect.width * .3F;
+
+            Rect movingRect = rect;
+            movingRect.x = columnX;
+            movingRect.width = columnWidth;
+            movingRect.height = _elementHeight * .5F;
+
+            EditorGUI.LabelField(movingRect, "Target ViewController: ", EditorStyles.boldLabel);
+
+            EditorGUI.BeginChangeCheck();
             {
-                movingRect.x = columnX;
-                movingRect.y += movingRect.height + 4F;
-                movingRect.width = columnWidth;
-                movingRect.height = height * .5F;
-
-                EditorGUI.LabelField(movingRect, "Target ViewController: ", EditorStyles.boldLabel);
-
-                EditorGUI.BeginChangeCheck();
-                {
-                    movingRect.x += movingRect.width;
-                    movingRect.y += 2F;
-                    movingRect.width = position.width - movingRect.width - 6F;
-                    movingRect.height = height * 0.5F;
-
-                    EditorGUI.ObjectField(
-                        movingRect,
-                        provider.methodTargetProperty,
-                        typeof(Object),
-                        GUIContent.none);
-                }
-                if (EditorGUI.EndChangeCheck() &&
-                    provider.methodTargetProperty.serializedObject.ApplyModifiedProperties())
-                {
-                    provider.SetupMethods(isGenericComponentAction);
-                    provider.SetMethodNameFieldValue(false);
-                }
-
-                movingRect.y += height * .5F;
-                movingRect.x = columnX;
-                movingRect.width = columnWidth;
-                EditorGUI.LabelField(movingRect, "Bound to: ", EditorStyles.boldLabel);
-
-                movingRect.y += 4F;
                 movingRect.x += movingRect.width;
-                movingRect.width = position.width - movingRect.width - 6F;
+                movingRect.y += 2F;
+                movingRect.width = rect.width - movingRect.width - 6F;
+                movingRect.height = _elementHeight * 0.4F;
 
-                int selectedMethodIndex = provider.selectedMethodIndex;
-                string[] allMethodsSignatures = provider.allMethodsSignatures;
-
-                int newSelection = EditorGUI.Popup(movingRect, selectedMethodIndex, allMethodsSignatures);
-
-                if (newSelection != selectedMethodIndex)
-                {
-                    provider.selectedMethodIndex = newSelection;
-                    provider.SetMethodNameFieldValue();
-                }
+                EditorGUI.ObjectField(movingRect, 
+                    methodHandler.methodTargetProperty,
+                    typeof(Object), GUIContent.none);
+            }
+            if (EditorGUI.EndChangeCheck() &&
+                methodHandler.methodTargetProperty.serializedObject.ApplyModifiedProperties())
+            {
+                methodHandler.SetupMethods(_viewHandler.IsGenericComponentAction());
+                methodHandler.SetMethodNameFieldValue(false);
             }
 
-            EditorGUI.EndFoldoutHeaderGroup();
+            movingRect.y += _elementHeight * .5F;
+            movingRect.x = columnX;
+            movingRect.width = columnWidth;
+            EditorGUI.LabelField(movingRect, "Bound to: ", EditorStyles.boldLabel);
+
+            movingRect.y += 4F;
+            movingRect.x += movingRect.width;
+            movingRect.width = rect.width - movingRect.width - 6F;
+
+            int selectedMethodIndex = methodHandler.selectedMethodIndex;
+            string[] allMethodsSignatures = methodHandler.allMethodsSignatures;
+
+            int newSelection = EditorGUI.Popup(
+                movingRect, selectedMethodIndex, 
+                allMethodsSignatures, _popupStyle);
+
+            if (newSelection != selectedMethodIndex)
+            {
+                methodHandler.selectedMethodIndex = newSelection;
+                methodHandler.SetMethodNameFieldValue();
+            }
+        }
+
+        private void AddListElement(ReorderableList list)
+        {
+            int index = list.count;
+            _componentActionsProperty.InsertArrayElementAtIndex(index);
+            if (!_componentActionsProperty.serializedObject.ApplyModifiedProperties()) return;
+            EditorUtility.SetDirty(_componentActionsProperty.serializedObject.targetObject);
+
+            AddItemToMethodHandlers(_viewHandler, _componentActionsProperty, index);
+        }
+
+        private void RemoveListElement(ReorderableList list)
+        {
+            int index = list.index;
+            _componentActionsProperty.DeleteArrayElementAtIndex(index);
+            if (!_componentActionsProperty.serializedObject.ApplyModifiedProperties()) return;
+            EditorUtility.SetDirty(_componentActionsProperty.serializedObject.targetObject);
+
+            _methodHandlers.Clear();
+            FillMethodHandlers(_viewHandler, _componentActionsProperty);
+        }
+
+        private void FillMethodHandlers(ComponentBindingViewHandler viewHandler, SerializedProperty componentActionsProperty)
+        {
+            for (int index = 0; index < _componentActionsProperty.arraySize; index++)
+            {
+                AddItemToMethodHandlers(viewHandler, componentActionsProperty, index);
+            }
+        }
+
+        private void AddItemToMethodHandlers(ComponentBindingViewHandler viewHandler, SerializedProperty componentActionsProperty, int index)
+        {
+            ComponentBindingMethodHandler item =
+                                new ComponentBindingMethodHandler(viewHandler.bindingGenericType,
+                                componentActionsProperty.GetArrayElementAtIndex(index));
+
+            item.SetupMethods(_viewHandler.IsGenericComponentAction());
+
+            _methodHandlers.Add(item);
         }
     }
 }

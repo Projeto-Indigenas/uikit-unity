@@ -2,6 +2,7 @@ using UIKit.Components;
 using UIKit.Editor.Drawers.Handlers;
 using UIKit.Editor.Extensions;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace UIKit.Editor.Drawers
@@ -9,37 +10,41 @@ namespace UIKit.Editor.Drawers
     [CustomPropertyDrawer(typeof(ComponentBinding), true)]
     class ComponentBindingPropertyDrawer : PropertyDrawer
     {
-        private const float _height = 60F;
-        private const float _foldoutHeight = 20F;
-        private const float _contentHeight = 60F;
+        private const float _foldoutHeight = 30F;
 
+        public const float height = 60F;
+
+        private static bool _draw = default;
         private static GUIStyle _whiteLargeLabel = default;
 
-        public static bool draw = default;
-
+        private SerializedProperty _componentActionsProperty = default;
         private ComponentBindingViewHandler _viewHandler = default;
-        private ComponentBindingMethodHandler _methodHandler = default;
+        private ComponentBindingMethodDrawer _methodDrawer = default;
+        private bool _foldout = default;
+
+        public static void EnableDrawing() => _draw = true;
+        public static void DisableDrawing() => _draw = false;
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            if (!draw) return 0F;
+            if (!_draw) return 0F;
 
             if (_viewHandler?.IsComponentAction() ?? false)
             {
-                if (_methodHandler?.foldout ?? false)
+                if (!_foldout)
                 {
-                    return _height + _foldoutHeight + _contentHeight;
+                    return height + _foldoutHeight;
                 }
 
-                return _height + _foldoutHeight;
+                return height + _foldoutHeight + _methodDrawer.height;
             }
 
-            return _height;
+            return height;
         }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            if (!draw) return;
+            if (!_draw) return;
 
             if (_whiteLargeLabel == null)
             {
@@ -52,13 +57,15 @@ namespace UIKit.Editor.Drawers
             {
                 _viewHandler = new ComponentBindingViewHandler(property);
                 _viewHandler.Setup();
+            }
 
-                if (_methodHandler == null && _viewHandler.IsComponentAction())
+            if (_componentActionsProperty == null)
+            {
+                _componentActionsProperty = property.FindPropertyRelative("_componentActions");
+
+                if (_componentActionsProperty != null)
                 {
-                    _methodHandler = new ComponentBindingMethodHandler(
-                        _viewHandler.bindingGenericType, property);
-
-                    _methodHandler.SetupMethods(_viewHandler.IsGenericComponentAction());
+                    _methodDrawer = new ComponentBindingMethodDrawer(_viewHandler, _componentActionsProperty);
                 }
             }
 
@@ -67,11 +74,11 @@ namespace UIKit.Editor.Drawers
             float columnX = position.x + 2F;
             float columnWidth = position.width * .3F;
 
-            Rect movingRect = new Rect(columnX, position.y, position.width - 6F, _height * .5F);
+            Rect movingRect = new Rect(columnX, position.y, position.width - 6F, height * .5F);
 
             EditorGUI.LabelField(movingRect, property.displayName, _whiteLargeLabel);
 
-            movingRect.y += _height * .5F;
+            movingRect.y += height * .5F;
             movingRect.x = columnX;
             movingRect.width = columnWidth;
 
@@ -97,15 +104,26 @@ namespace UIKit.Editor.Drawers
                 EditorUtility.SetDirty(property.serializedObject.targetObject);
             }
 
-            if (_methodHandler == null) return;
+            if (!_viewHandler.IsComponentAction()) return;
 
-            ComponentBindingMethodDrawer.OnGUI(
-                _methodHandler, 
-                movingRect, position,
-                columnX, columnWidth, 
-                _height, _foldoutHeight,
-                _viewHandler.IsGenericComponentAction(),
-                ref _methodHandler.foldout);
+            movingRect.x = position.x + 14F;
+            movingRect.y += height * .5F;
+            movingRect.width = position.width;
+            movingRect.height = _foldoutHeight;
+
+            _foldout = EditorGUI.BeginFoldoutHeaderGroup(movingRect, _foldout, "ComponentAction Bindings");
+
+            if (_foldout)
+            {
+                movingRect.x = position.x + 2F;
+                movingRect.y += height * .4F;
+                movingRect.width = position.width - 4F;
+                movingRect.height = _foldoutHeight;
+
+                _methodDrawer.Draw(movingRect);
+            }
+
+            EditorGUI.EndFoldoutHeaderGroup();
         }
 
         private Color GetColor()

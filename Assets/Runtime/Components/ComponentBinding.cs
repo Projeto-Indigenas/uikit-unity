@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
@@ -23,9 +22,7 @@ namespace UIKit.Components
     {
         private const BindingFlags _bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        [SerializeField] private UnityEngine.Object _methodTarget = default;
-        [SerializeField] private string _methodName = default;
-        [SerializeField] private string _parameters = default;
+        [SerializeField] private ComponentActionData[] _componentActions = default;
 
         public new TComponent target => (TComponent)_target;
 
@@ -33,37 +30,58 @@ namespace UIKit.Components
 
         void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
-            //
+            
         }
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
-            if (!_methodTarget || string.IsNullOrEmpty(_methodName)) return;
+            if (_componentActions == null || _componentActions.Length == 0) return;
 
-            if (_target is IComponentActionSetup setup)
+            for (int index = 0; index < _componentActions.Length; index++)
             {
-                Type targetType = _methodTarget.GetType();
+                ComponentActionData current = _componentActions[index];
 
-                MethodInfo methodInfo = targetType.GetMethod(
-                    _methodName, 
-                    _bindingFlags, 
-                    null, 
-                    GetParametersTypes(),
-                    null);
+                UnityEngine.Object methodTarget = current.methodTarget;
+                string methodName = current.methodName;
+                string parameters = current.parameters;
+                uint actionType = current.actionType;
+                MethodInfo methodInfo = null;
+                
+                if (methodTarget)
+                {
+                    Type targetType = methodTarget.GetType();
 
-                if (methodInfo == null) return;
+                    methodInfo = targetType.GetMethod(
+                        methodName,
+                        _bindingFlags,
+                        null,
+                        GetParametersTypes(parameters),
+                        null);
+                }
 
-                setup.SetupAction(_methodTarget, methodInfo);
+                if (!methodTarget || methodInfo == null) continue;
+
+                if (_target is IComponentActionBinder binder)
+                {
+                    binder.BindAction(methodTarget, methodInfo);
+
+                    continue;
+                }
+
+                if (_target is IGenericComponentActionBinder genericBinder)
+                {
+                    genericBinder.BindAction(actionType, methodTarget, methodInfo);
+                }
             }
         }
 
         #endregion
 
-        private Type[] GetParametersTypes()
+        private Type[] GetParametersTypes(string parametersString)
         {
-            if (string.IsNullOrEmpty(_parameters)) return Array.Empty<Type>();
+            if (string.IsNullOrEmpty(parametersString)) return Array.Empty<Type>();
 
-            string[] parameters = _parameters.Split(';');
+            string[] parameters = parametersString.Split(';');
             Type[] types = new Type[parameters.Length];
             for (int index = 0; index < parameters.Length; index++)
             {
@@ -72,5 +90,19 @@ namespace UIKit.Components
             }
             return types;
         }
+    }
+
+    [Serializable]
+    public class ComponentActionData
+    {
+        [SerializeField] private UnityEngine.Object _methodTarget = default;
+        [SerializeField] private string _methodName = default;
+        [SerializeField] private string _parameters = default;
+        [SerializeField] private uint _actionType = default;
+
+        public UnityEngine.Object methodTarget => _methodTarget;
+        public string methodName => _methodName;
+        public string parameters => _parameters;
+        public uint actionType => _actionType;
     }
 }

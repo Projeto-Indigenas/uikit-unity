@@ -5,16 +5,27 @@ namespace UIKit.Components
 {
     public interface IComponentAction
     {
-        event Action action;
+        //
     }
 
     public interface IComponentAction<TParameter>
     {
-        event Action<TParameter> action;
+        //
     }
 
-    internal interface IComponentActionSetup
+    internal interface IComponentActionBinder
     {
-        void SetupAction(UnityEngine.Object target, MethodInfo info);
+        void BindAction(UnityEngine.Object target, MethodInfo info);
+    }
+
+    internal interface IGenericComponentActionBinder
+    {
+        void BindAction(uint actionType, UnityEngine.Object target, MethodInfo info);
+    }
+
+    internal interface IComponentActionBinder<TActionType> : IGenericComponentActionBinder
+        where TActionType : Enum
+    { 
+        //
     }
 }
