@@ -114,13 +114,13 @@ namespace UIKit.Editor.Drawers.Handlers
             return _methodNameProperty.stringValue;
         }
 
-        public void SetMethodNameFieldValue()
+        public void SetMethodNameFieldValue(bool setTarget = true)
         {
             if (_methodNameProperty == null) return;
 
             MethodData data = _methodsNamesAndTargets[selectedMethodIndex];
 
-            methodTargetProperty.objectReferenceValue = data.monoBehaviour;
+            if (setTarget) methodTargetProperty.objectReferenceValue = data.monoBehaviour;
             _methodNameProperty.stringValue = selectedMethodIndex == 0 ? null : data.methodName;
             _parametersProperty.stringValue = data.parameters;
 

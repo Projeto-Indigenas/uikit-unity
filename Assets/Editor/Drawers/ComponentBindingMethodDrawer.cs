@@ -46,9 +46,8 @@ namespace UIKit.Editor.Drawers
             if (EditorGUI.EndChangeCheck() && 
                 provider.methodTargetProperty.serializedObject.ApplyModifiedProperties())
             {
-                EditorUtility.SetDirty(property.serializedObject.targetObject);
-
                 provider.SetupMethods(isGenericComponentAction);
+                provider.SetMethodNameFieldValue(false);
             }
 
             movingRect.y += height * .5F;
