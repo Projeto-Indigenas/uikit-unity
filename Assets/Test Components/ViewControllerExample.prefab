@@ -1340,9 +1340,9 @@ MonoBehaviour:
     _target: {fileID: 21388758844727011}
   _inputFieldViewBinding:
     _target: {fileID: 1457142501185419299}
-    _methodTarget: {fileID: 1457142499883160252}
-    _methodName: 
-    _parameters: 
+    _methodTarget: {fileID: 1457142500473265507}
+    _methodName: OtherInputFieldViewAction
+    _parameters: System.String
   _buttonViewBinding:
     _target: {fileID: 1457142500083909647}
     _methodTarget: {fileID: 3037625608170091032}

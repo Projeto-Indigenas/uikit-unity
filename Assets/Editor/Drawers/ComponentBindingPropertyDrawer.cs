@@ -1,20 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using UIKit.Components;
 using UIKit.Editor.Drawers.Handlers;
 using UIKit.Editor.Extensions;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace UIKit.Editor.Drawers
 {
     [CustomPropertyDrawer(typeof(ComponentBinding), true)]
     class ComponentBindingPropertyDrawer : PropertyDrawer
     {
-        private const float _height = 50F;
+        private const float _height = 60F;
+        private const float _foldoutHeight = 20F;
+        private const float _contentHeight = 60F;
 
         private static GUIStyle _whiteLargeLabel = default;
 
@@ -29,7 +26,12 @@ namespace UIKit.Editor.Drawers
 
             if (_viewHandler?.IsComponentAction() ?? false)
             {
-                return _height + 60;
+                if (_methodHandler?.foldout ?? false)
+                {
+                    return _height + _foldoutHeight + _contentHeight;
+                }
+
+                return _height + _foldoutHeight;
             }
 
             return _height;
@@ -51,7 +53,7 @@ namespace UIKit.Editor.Drawers
                 _viewHandler = new ComponentBindingViewHandler(property);
                 _viewHandler.Setup();
 
-                if (_viewHandler.IsComponentAction())
+                if (_methodHandler == null && _viewHandler.IsComponentAction())
                 {
                     _methodHandler = new ComponentBindingMethodHandler(
                         _viewHandler.bindingGenericType, property);
@@ -98,10 +100,12 @@ namespace UIKit.Editor.Drawers
             if (_methodHandler == null) return;
 
             ComponentBindingMethodDrawer.OnGUI(
-                property, _methodHandler,
+                _methodHandler, 
                 movingRect, position,
-                columnX, columnWidth, _height,
-                _viewHandler.IsGenericComponentAction());
+                columnX, columnWidth, 
+                _height, _foldoutHeight,
+                _viewHandler.IsGenericComponentAction(),
+                ref _methodHandler.foldout);
         }
 
         private Color GetColor()

@@ -21,6 +21,7 @@ namespace UIKit.Editor.Drawers.Handlers
 
         public string[] allMethodsSignatures { get; private set; }
         public int selectedMethodIndex { get; set; }
+        public bool foldout = false;
 
         public ComponentBindingMethodHandler(
             Type bindingGenericType, 
