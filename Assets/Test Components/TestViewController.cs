@@ -19,15 +19,33 @@ namespace UIKitTests
         }
 
         [ComponentAction]
+        private void OtherButtonViewAction()
+        {
+
+        }
+
+        [ComponentAction]
         private void DropdownViewAction(DropdownOption selectedOption)
         {
             Debug.Log($"This is automatically assigned dropdown action: {selectedOption.text}");
         }
 
         [ComponentAction]
+        private void OtherDropdownViewAction(DropdownOption selectedOption)
+        {
+
+        }
+
+        [ComponentAction]
         private void InputFieldViewAction(string newText)
         {
             Debug.Log($"This is automatically assigned input field action value: {newText}");
+        }
+
+        [ComponentAction]
+        private void OtherInputFieldViewAction(string newText)
+        {
+
         }
     }
 }

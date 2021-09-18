@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UIKit.Components;
-using UIKit.Editor.Drawers.Reflection;
+using UIKit.Editor.Drawers.Handlers;
 using UIKit.Editor.Extensions;
 using UnityEditor;
 using UnityEngine;
@@ -27,7 +27,7 @@ namespace UIKit.Editor.Drawers
         private string[] _availableComponents = default;
         private int _selectedComponentIndex = default;
 
-        private ComponentBindingMethodProvider _methodProvider = default;
+        private ComponentBindingMethodHandler _methodHandler = default;
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
@@ -64,12 +64,12 @@ namespace UIKit.Editor.Drawers
 
             Rect movingRect = new Rect(columnX, position.y, position.width - 6F, _height * .5F);
             EditorGUI.LabelField(movingRect, property.displayName, _whiteLargeLabel);
-            
+
             movingRect.y += _height * .5F;
             movingRect.x = columnX;
             movingRect.width = columnWidth;
             EditorGUI.LabelField(movingRect, "Bound to: ", EditorStyles.boldLabel);
-            
+
             movingRect.x += movingRect.width;
             movingRect.y += 4F;
             movingRect.width = position.width - movingRect.width - 6F;
@@ -85,10 +85,13 @@ namespace UIKit.Editor.Drawers
                 EditorUtility.SetDirty(property.serializedObject.targetObject);
             }
 
-            _methodProvider?.OnGUI(
-                    movingRect, position,
-                    columnX, columnWidth, _height,
-                    property, IsGenericComponentAction());
+            if (_methodHandler == null) return;
+
+            ComponentBindingMethodDrawer.OnGUI(
+                property, _methodHandler,
+                movingRect, position,
+                columnX, columnWidth, _height,
+                IsGenericComponentAction());
         }
 
         private void InitialSetup(SerializedProperty property)
@@ -131,8 +134,8 @@ namespace UIKit.Editor.Drawers
 
             SerializedProperty targetProperty = property.FindPropertyRelative("_methodTarget");
             if (targetProperty == null) return;
-            _methodProvider = new ComponentBindingMethodProvider(_binding, _bindingGenericType, targetProperty);
-            _methodProvider.SetupMethods(targetProperty.objectReferenceValue, IsGenericComponentAction());
+            _methodHandler = new ComponentBindingMethodHandler(_binding, _bindingGenericType, targetProperty);
+            _methodHandler.SetupMethods(IsGenericComponentAction());
         }
 
         private bool IsComponentAction()

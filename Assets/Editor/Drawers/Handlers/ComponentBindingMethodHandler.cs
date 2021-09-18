@@ -1,38 +1,43 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Collections.Generic;
 using UIKit.Components;
 using UIKit.Components.Attributes;
 using UnityEditor;
-using UnityEngine;
 
-namespace UIKit.Editor.Drawers.Reflection
+namespace UIKit.Editor.Drawers.Handlers
 {
-    internal class ComponentBindingMethodProvider
+    internal class ComponentBindingMethodHandler
     {
         private readonly ComponentBinding _binding = default;
         private readonly Type _bindingGenericType = default;
-        private readonly SerializedProperty _targetProperty = default;
         private readonly FieldInfo _methodNameFieldInfo = default;
+        
+        public readonly SerializedProperty methodTargetProperty = default;
 
-        private string[] _allMethodsNames = default;
-        private string[] _allMethodsSignatures = default;
-        private int _selectedMethodIndex = default;
+        public string[] allMethodsNames { get; private set; }
+        public string[] allMethodsSignatures { get; private set; }
+        public int selectedMethodIndex { get; set; }
 
-        public ComponentBindingMethodProvider(ComponentBinding binding, Type bindingGenericType, SerializedProperty targetProperty)
+        public ComponentBindingMethodHandler(
+            ComponentBinding binding, 
+            Type bindingGenericType, 
+            SerializedProperty targetProperty)
         {
             _binding = binding;
             _bindingGenericType = bindingGenericType;
             Type componentBindingType = binding.GetType();
 
-            _targetProperty = targetProperty;
+            methodTargetProperty = targetProperty;
             _methodNameFieldInfo = componentBindingType.GetField("_methodName", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
-        public void SetupMethods(UnityEngine.Object targetObject, bool isGenericComponentAction)
+        public void SetupMethods(bool isGenericComponentAction)
         {
-            _selectedMethodIndex = 0;
+            UnityEngine.Object targetObject = methodTargetProperty.objectReferenceValue;
+
+            selectedMethodIndex = 0;
 
             MethodInfo[] methods = Array.Empty<MethodInfo>();
             if (targetObject != null)
@@ -61,7 +66,7 @@ namespace UIKit.Editor.Drawers.Reflection
                         continue;
                     }
 
-                    string methodSignature = GetFullMethodSignature(info, parameters);
+                    string methodSignature = GetFullMethodSignature(targetObject, info, parameters);
                     string methodName = info.Name;
 
                     methodsSignatures.Add(methodSignature);
@@ -71,69 +76,18 @@ namespace UIKit.Editor.Drawers.Reflection
                 }
             }
 
-            _allMethodsNames = methodsNames.ToArray();
-            _allMethodsSignatures = methodsSignatures.ToArray();
+            allMethodsNames = methodsNames.ToArray();
+            allMethodsSignatures = methodsSignatures.ToArray();
 
             string currentMethodNameValue = GetMethodNameFieldValue();
 
-            for (int index = 0; index < _allMethodsNames.Length; index++)
+            for (int index = 0; index < allMethodsNames.Length; index++)
             {
-                string methodName = _allMethodsNames[index];
+                string methodName = allMethodsNames[index];
 
                 if (!methodName.Equals(currentMethodNameValue)) continue;
 
-                _selectedMethodIndex = index;
-            }
-        }
-
-        public void OnGUI(Rect movingRect, Rect position, float columnX, float columnWidth, float height,
-            SerializedProperty property, bool isGenericComponentAction)
-        {
-            movingRect.x = position.x + 2F;
-            movingRect.y += height * .5F;
-            movingRect.width = position.width - 4F;
-            movingRect.height = 1F;
-            EditorGUI.DrawRect(movingRect, Color.black);
-
-            movingRect.x = columnX;
-            movingRect.y += 4F;
-            movingRect.width = columnWidth;
-            movingRect.height = height * .5F;
-            EditorGUI.LabelField(movingRect, "Target ViewController: ", EditorStyles.boldLabel);
-
-            EditorGUI.BeginChangeCheck();
-
-            movingRect.x += movingRect.width;
-            movingRect.y += 2F;
-            movingRect.width = position.width - movingRect.width - 6F;
-            movingRect.height = height * 0.5F;
-            EditorGUI.ObjectField(movingRect, _targetProperty, typeof(ViewController), GUIContent.none);
-
-            if (EditorGUI.EndChangeCheck() && _targetProperty.serializedObject.ApplyModifiedProperties())
-            {
-                EditorUtility.SetDirty(property.serializedObject.targetObject);
-
-                SetupMethods(_targetProperty.objectReferenceValue, isGenericComponentAction);
-            }
-
-            movingRect.y += height * .5F;
-            movingRect.x = columnX;
-            movingRect.width = columnWidth;
-            EditorGUI.LabelField(movingRect, "Bound to: ", EditorStyles.boldLabel);
-
-            movingRect.y += 4F;
-            movingRect.x += movingRect.width;
-            movingRect.width = position.width - movingRect.width - 6F;
-            int newSelection = EditorGUI.Popup(movingRect, _selectedMethodIndex, _allMethodsSignatures);
-
-            if (newSelection != _selectedMethodIndex)
-            {
-                _selectedMethodIndex = newSelection;
-
-                if (newSelection == 0) SetMethodNameFieldValue(null);
-                else SetMethodNameFieldValue(_allMethodsNames[newSelection]);
-
-                EditorUtility.SetDirty(property.serializedObject.targetObject);
+                selectedMethodIndex = index;
             }
         }
 
@@ -144,12 +98,12 @@ namespace UIKit.Editor.Drawers.Reflection
             return (string)_methodNameFieldInfo.GetValue(_binding);
         }
 
-        private void SetMethodNameFieldValue(string methodName)
+        public void SetMethodNameFieldValue(string methodName)
         {
             _methodNameFieldInfo.SetValue(_binding, methodName);
         }
 
-        private string GetFullMethodSignature(MethodInfo info, ParameterInfo[] parameters)
+        private string GetFullMethodSignature(UnityEngine.Object targetObject, MethodInfo info, ParameterInfo[] parameters)
         {
             string containingClassName = info.DeclaringType.Name;
             string methodName = info.Name;
@@ -165,7 +119,7 @@ namespace UIKit.Editor.Drawers.Reflection
                 methodName += ")";
             }
             else methodName += "(void)";
-            return $"{containingClassName}::{methodName}";
+            return $"{targetObject.name} ({containingClassName})/{methodName}";
         }
 
         private bool IsSameComponentActionGenericType(Type genericType)
