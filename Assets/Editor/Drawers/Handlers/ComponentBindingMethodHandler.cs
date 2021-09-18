@@ -5,32 +5,32 @@ using System.Reflection;
 using UIKit.Components;
 using UIKit.Components.Attributes;
 using UnityEditor;
+using UnityEngine;
 
 namespace UIKit.Editor.Drawers.Handlers
 {
     internal class ComponentBindingMethodHandler
     {
-        private readonly ComponentBinding _binding = default;
         private readonly Type _bindingGenericType = default;
-        private readonly FieldInfo _methodNameFieldInfo = default;
+        private readonly SerializedProperty _methodNameProperty = default;
+        private readonly SerializedProperty _parametersProperty = default;
+
+        private MethodData[] _methodsNamesAndTargets = default;
         
         public readonly SerializedProperty methodTargetProperty = default;
 
-        public string[] allMethodsNames { get; private set; }
         public string[] allMethodsSignatures { get; private set; }
         public int selectedMethodIndex { get; set; }
 
         public ComponentBindingMethodHandler(
-            ComponentBinding binding, 
             Type bindingGenericType, 
-            SerializedProperty targetProperty)
+            SerializedProperty property)
         {
-            _binding = binding;
             _bindingGenericType = bindingGenericType;
-            Type componentBindingType = binding.GetType();
 
-            methodTargetProperty = targetProperty;
-            _methodNameFieldInfo = componentBindingType.GetField("_methodName", BindingFlags.Instance | BindingFlags.NonPublic);
+            methodTargetProperty = property.FindPropertyRelative("_methodTarget");
+            _methodNameProperty = property.FindPropertyRelative("_methodName");
+            _parametersProperty = property.FindPropertyRelative("_parameters");
         }
 
         public void SetupMethods(bool isGenericComponentAction)
@@ -39,53 +39,69 @@ namespace UIKit.Editor.Drawers.Handlers
 
             selectedMethodIndex = 0;
 
-            MethodInfo[] methods = Array.Empty<MethodInfo>();
-            if (targetObject != null)
-            {
-                Type targetObjectType = targetObject.GetType();
-                methods = targetObjectType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            }
-
-            List<string> methodsNames = new List<string>() { "None" };
+            List<MethodData> methodsNamesAndTargets = new List<MethodData> { new MethodData(null, "None", null) };
             List<string> methodsSignatures = new List<string> { "None" };
 
-            Type customAttributeType = typeof(ComponentActionAttribute);
-            for (int index = 0; index < methods.Length; index++)
+            if (targetObject)
             {
-                MethodInfo info = methods[index];
-
-                foreach (CustomAttributeData data in info.CustomAttributes)
+                MonoBehaviour[] monoBehaviours;
+                if (targetObject is GameObject gameObject)
                 {
-                    if (!customAttributeType.Name.Equals(data.AttributeType.Name)) continue;
+                    monoBehaviours = gameObject.GetComponents<MonoBehaviour>();
+                }
+                else 
+                {
+                    monoBehaviours = ((MonoBehaviour)targetObject).GetComponents<MonoBehaviour>();
+                }
 
-                    ParameterInfo[] parameters = info.GetParameters();
+                for (int indexBehaviours = 0; indexBehaviours < monoBehaviours.Length; indexBehaviours++)
+                {
+                    MonoBehaviour current = monoBehaviours[indexBehaviours];
+                    Type currentType = current.GetType();
 
-                    if (parameters.Length > 0 && !IsSameComponentActionGenericType(parameters[0].ParameterType) ||
-                        parameters.Length == 0 && isGenericComponentAction)
+                    MethodInfo[] methods = currentType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+                    Type customAttributeType = typeof(ComponentActionAttribute);
+                    for (int indexMethods = 0; indexMethods < methods.Length; indexMethods++)
                     {
-                        continue;
+                        MethodInfo info = methods[indexMethods];
+
+                        foreach (CustomAttributeData data in info.CustomAttributes)
+                        {
+                            if (!customAttributeType.Name.Equals(data.AttributeType.Name)) continue;
+
+                            ParameterInfo[] parameters = info.GetParameters();
+
+                            if (parameters.Length > 0 && !IsSameComponentActionGenericType(parameters[0].ParameterType) ||
+                                parameters.Length == 0 && isGenericComponentAction)
+                            {
+                                continue;
+                            }
+
+                            string methodSignature = GetFullMethodSignature(targetObject, info, parameters);
+                            string methodName = info.Name;
+                            string parametersNames = GetParametersString(parameters);
+
+                            methodsSignatures.Add(methodSignature);
+                            MethodData pair = new MethodData(current, methodName, parametersNames);
+                            methodsNamesAndTargets.Add(pair);
+
+                            break;
+                        }
                     }
-
-                    string methodSignature = GetFullMethodSignature(targetObject, info, parameters);
-                    string methodName = info.Name;
-
-                    methodsSignatures.Add(methodSignature);
-                    methodsNames.Add(methodName);
-
-                    break;
                 }
             }
 
-            allMethodsNames = methodsNames.ToArray();
+            _methodsNamesAndTargets = methodsNamesAndTargets.ToArray();
             allMethodsSignatures = methodsSignatures.ToArray();
 
             string currentMethodNameValue = GetMethodNameFieldValue();
 
-            for (int index = 0; index < allMethodsNames.Length; index++)
+            for (int index = 0; index < _methodsNamesAndTargets.Length; index++)
             {
-                string methodName = allMethodsNames[index];
+                MethodData current = _methodsNamesAndTargets[index];
 
-                if (!methodName.Equals(currentMethodNameValue)) continue;
+                if (!current.methodName.Equals(currentMethodNameValue)) continue;
 
                 selectedMethodIndex = index;
             }
@@ -93,14 +109,25 @@ namespace UIKit.Editor.Drawers.Handlers
 
         private string GetMethodNameFieldValue()
         {
-            if (_methodNameFieldInfo == null) return null;
+            if (_methodNameProperty == null) return null;
 
-            return (string)_methodNameFieldInfo.GetValue(_binding);
+            return _methodNameProperty.stringValue;
         }
 
-        public void SetMethodNameFieldValue(string methodName)
+        public void SetMethodNameFieldValue()
         {
-            _methodNameFieldInfo.SetValue(_binding, methodName);
+            if (_methodNameProperty == null) return;
+
+            MethodData data = _methodsNamesAndTargets[selectedMethodIndex];
+
+            methodTargetProperty.objectReferenceValue = data.monoBehaviour;
+            _methodNameProperty.stringValue = selectedMethodIndex == 0 ? null : data.methodName;
+            _parametersProperty.stringValue = data.parameters;
+
+            if (methodTargetProperty.serializedObject.ApplyModifiedProperties())
+            {
+                EditorUtility.SetDirty(methodTargetProperty.serializedObject.targetObject);
+            }
         }
 
         private string GetFullMethodSignature(UnityEngine.Object targetObject, MethodInfo info, ParameterInfo[] parameters)
@@ -129,6 +156,41 @@ namespace UIKit.Editor.Drawers.Handlers
                 bool isGeneric = i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IComponentAction<>);
                 return isGeneric && i.GenericTypeArguments[0] == genericType;
             });
+        }
+
+        private string GetParametersString(ParameterInfo[] parameters)
+        {
+            if (parameters.Length == 0) return null;
+
+            string value = "";
+
+            for (int index = 0; index < parameters.Length; index++)
+            {
+                ParameterInfo current = parameters[index];
+
+                value += current.ParameterType.FullName;
+
+                if (index < parameters.Length - 1)
+                {
+                    value += ";";
+                }
+            }
+
+            return value;
+        }
+    }
+
+    internal struct MethodData
+    {
+        public readonly MonoBehaviour monoBehaviour;
+        public readonly string methodName;
+        public readonly string parameters;
+
+        public MethodData(MonoBehaviour monoBehaviour, string methodName, string parameters)
+        {
+            this.monoBehaviour = monoBehaviour;
+            this.methodName = methodName;
+            this.parameters = parameters;
         }
     }
 }

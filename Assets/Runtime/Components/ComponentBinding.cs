@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
@@ -24,6 +25,7 @@ namespace UIKit.Components
 
         [SerializeField] private UnityEngine.Object _methodTarget = default;
         [SerializeField] private string _methodName = default;
+        [SerializeField] private string _parameters = default;
 
         public new TComponent target => (TComponent)_target;
 
@@ -36,11 +38,18 @@ namespace UIKit.Components
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
-            if (_methodTarget == null || string.IsNullOrEmpty(_methodName)) return;
+            if (!_methodTarget || string.IsNullOrEmpty(_methodName)) return;
 
-            if (target is IComponentActionSetup setup)
+            if (_target is IComponentActionSetup setup)
             {
-                MethodInfo methodInfo = _methodTarget.GetType().GetMethod(_methodName, _bindingFlags);
+                Type targetType = _methodTarget.GetType();
+
+                MethodInfo methodInfo = targetType.GetMethod(
+                    _methodName, 
+                    _bindingFlags, 
+                    null, 
+                    GetParametersTypes(),
+                    null);
 
                 if (methodInfo == null) return;
 
@@ -49,5 +58,19 @@ namespace UIKit.Components
         }
 
         #endregion
+
+        private Type[] GetParametersTypes()
+        {
+            if (string.IsNullOrEmpty(_parameters)) return Array.Empty<Type>();
+
+            string[] parameters = _parameters.Split(';');
+            Type[] types = new Type[parameters.Length];
+            for (int index = 0; index < parameters.Length; index++)
+            {
+                string current = parameters[index];
+                types[index] = Type.GetType(current);
+            }
+            return types;
+        }
     }
 }

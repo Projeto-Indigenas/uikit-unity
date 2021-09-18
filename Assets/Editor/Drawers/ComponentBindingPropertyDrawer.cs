@@ -51,13 +51,11 @@ namespace UIKit.Editor.Drawers
                 _viewHandler = new ComponentBindingViewHandler(property);
                 _viewHandler.Setup();
 
-                SerializedProperty targetProperty = property.FindPropertyRelative("_methodTarget");
-                if (targetProperty != null)
+                if (_viewHandler.IsComponentAction())
                 {
                     _methodHandler = new ComponentBindingMethodHandler(
-                        _viewHandler.binding,
-                        _viewHandler.bindingGenericType,
-                        targetProperty);
+                        _viewHandler.bindingGenericType, property);
+
                     _methodHandler.SetupMethods(_viewHandler.IsGenericComponentAction());
                 }
             }

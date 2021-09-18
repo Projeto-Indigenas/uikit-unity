@@ -1274,6 +1274,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1457142500473265504}
   - component: {fileID: 1457142500473265506}
+  - component: {fileID: 3037625608170091032}
   - component: {fileID: 1457142500473265507}
   m_Layer: 0
   m_Name: ViewControllerExample
@@ -1310,6 +1311,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1457142500473265505}
   m_CullTransparentMesh: 1
+--- !u!114 &3037625608170091032
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1457142500473265505}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46487d4a30137bd42ba0b9712137990e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &1457142500473265507
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1324,19 +1337,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _visibleWhenFirstLoaded: 0
   _unkownViewTypeBinding:
-    _target: {fileID: 1457142500994295997}
+    _target: {fileID: 21388758844727011}
   _inputFieldViewBinding:
     _target: {fileID: 1457142501185419299}
-    _methodTarget: {fileID: 1457142500473265507}
-    _methodName: InputFieldViewAction
+    _methodTarget: {fileID: 3037625608170091032}
+    _methodName: PossibleAction
+    _parameters: System.String
   _buttonViewBinding:
     _target: {fileID: 1457142500083909647}
-    _methodTarget: {fileID: 1457142500473265507}
-    _methodName: ButtonViewAction
+    _methodTarget: {fileID: 3037625608170091032}
+    _methodName: PossibleAction
+    _parameters: 
   _dropdownViewBinding:
     _target: {fileID: 1457142499883160243}
     _methodTarget: {fileID: 1457142500473265507}
-    _methodName: DropdownViewAction
+    _methodName: OtherDropdownViewAction
+    _parameters: UIKit.DropdownOption
 --- !u!1 &1457142500589148107
 GameObject:
   m_ObjectHideFlags: 0
@@ -1575,7 +1591,7 @@ GameObject:
   - component: {fileID: 1457142500994295994}
   - component: {fileID: 1457142500994295995}
   - component: {fileID: 1457142500994295996}
-  - component: {fileID: 1457142500994295997}
+  - component: {fileID: 21388758844727011}
   m_Layer: 0
   m_Name: EmptyView
   m_TagString: Untagged
@@ -1655,7 +1671,7 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
---- !u!114 &1457142500994295997
+--- !u!114 &21388758844727011
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

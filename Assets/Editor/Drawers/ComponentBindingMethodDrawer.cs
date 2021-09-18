@@ -40,7 +40,7 @@ namespace UIKit.Editor.Drawers
                 EditorGUI.ObjectField(
                     movingRect,
                     provider.methodTargetProperty,
-                    typeof(ViewController),
+                    typeof(Object),
                     GUIContent.none);
             }
             if (EditorGUI.EndChangeCheck() && 
@@ -62,18 +62,13 @@ namespace UIKit.Editor.Drawers
 
             int selectedMethodIndex = provider.selectedMethodIndex;
             string[] allMethodsSignatures = provider.allMethodsSignatures;
-            string[] allMethodsNames = provider.allMethodsNames;
 
             int newSelection = EditorGUI.Popup(movingRect, selectedMethodIndex, allMethodsSignatures);
 
             if (newSelection != selectedMethodIndex)
             {
                 provider.selectedMethodIndex = newSelection;
-
-                if (newSelection == 0) provider.SetMethodNameFieldValue(null);
-                else provider.SetMethodNameFieldValue(allMethodsNames[newSelection]);
-
-                EditorUtility.SetDirty(property.serializedObject.targetObject);
+                provider.SetMethodNameFieldValue();
             }
         }
     }
