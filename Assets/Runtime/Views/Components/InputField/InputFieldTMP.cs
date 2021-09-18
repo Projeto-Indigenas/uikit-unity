@@ -18,5 +18,10 @@ namespace UIKit
             _inputField = inputField;
             _inputField.onEndEdit.AddListener(OnEndEditing);
         }
+
+        public override void Clear()
+        {
+            _inputField.onEndEdit.RemoveAllListeners();
+        }
     }
 }

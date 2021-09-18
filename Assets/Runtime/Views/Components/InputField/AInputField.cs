@@ -8,6 +8,8 @@ namespace UIKit
 
         public event Action<string> onEndEditing;
 
+        public abstract void Clear();
+
         protected void OnEndEditing(string newText)
         {
             onEndEditing?.Invoke(newText);

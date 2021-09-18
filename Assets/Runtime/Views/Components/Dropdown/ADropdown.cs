@@ -6,7 +6,7 @@ namespace UIKit
     {
         private DropdownOption[] _options = default;
 
-        public event Action<DropdownOption> onValueChanged;
+        public event Action<DropdownOption> valueDidChange;
 
         public virtual void SetOptions(DropdownOption[] options)
         {
@@ -17,7 +17,7 @@ namespace UIKit
 
         protected void ValueChangedAction(int index)
         {
-            onValueChanged?.Invoke(_options[index]);
+            valueDidChange?.Invoke(_options[index]);
         }
     }
 }
