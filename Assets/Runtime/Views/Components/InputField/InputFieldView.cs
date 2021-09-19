@@ -2,6 +2,7 @@
 using System.Reflection;
 using TMPro;
 using UIKit.Components;
+using UIKit.Components.Attributes;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,18 +15,39 @@ namespace UIKit
         textDidChange,
     }
 
-    public class InputFieldView : View, IComponentAction<string>, IComponentActionBinder<EInputFieldActionType>
+    public class InputFieldView : View, IComponentAction, IComponentActionBinder
     {
         private AInputField _inputField = default;
 
         private Action<string> _didEndEditing = default;
         private Action<string> _valueDidChange = default;
-        private Func<string, int, char, char> _textDidChange = default;
+        private Func<string, int, char, char> _validateInput = default;
 
         public string text
         {
             get => _inputField.text;
             set => _inputField.text = value;
+        }
+
+        [ComponentActionBinder]
+        public event Action<string> didEndEditing
+        {
+            add => _inputField.didEndEditing += value;
+            remove => _inputField.didEndEditing -= value;
+        }
+
+        [ComponentActionBinder]
+        public event Action<string> valueDidChange
+        {
+            add => _inputField.valueDidChange += value;
+            remove => _inputField.valueDidChange -= value;
+        }
+
+        [ComponentActionBinder]
+        public event Func<string, int, char, char> validateInput
+        {
+            add => _inputField.validateInput += value;
+            remove => _inputField.validateInput -= value;
         }
 
         #region Life cycle
@@ -64,25 +86,29 @@ namespace UIKit
             _inputField.Clear();
             _inputField.didEndEditing -= _didEndEditing;
             _inputField.valueDidChange -= _valueDidChange;
-            _inputField.validateInput -= _textDidChange;
+            _inputField.validateInput -= _validateInput;
         }
 
         #endregion
 
         #region IComponentActionMultipleBinder
 
-        void IGenericComponentActionBinder.BindAction(uint actionType, UnityEngine.Object target, MethodInfo info)
+        void IComponentActionBinder.BindAction(UnityEngine.Object target, MethodInfo info, EventInfo eventInfo)
         {
-            switch ((EInputFieldActionType)actionType)
+            if (eventInfo == null) return;
+
+            switch (eventInfo.Name)
             {
-                case EInputFieldActionType.didEndEditing:
-                    _didEndEditing = (Action<string>)info.CreateDelegate(typeof(Action<string>), target);
+                case nameof(valueDidChange):
+                    _valueDidChange = (Action<string>)info.CreateDelegate(typeof(Action<string>));
                     break;
-                case EInputFieldActionType.valueDidChange:
-                    _valueDidChange = (Action<string>)info.CreateDelegate(typeof(Action<string>), target);
+
+                case nameof(didEndEditing):
+                    _didEndEditing = (Action<string>)info.CreateDelegate(typeof(Action<string>));
                     break;
-                case EInputFieldActionType.textDidChange:
-                    _textDidChange = (Func<string, int, char, char>)info.CreateDelegate(typeof(Func<string, int, char, char>), target);
+
+                case nameof(validateInput):
+                    _validateInput = (Func<string, int, char, char>)info.CreateDelegate(typeof(Func<string, int, char, char>));
                     break;
             }
 
@@ -101,8 +127,8 @@ namespace UIKit
             _inputField.valueDidChange -= _valueDidChange;
             _inputField.valueDidChange += _valueDidChange;
 
-            _inputField.validateInput -= _textDidChange;
-            _inputField.validateInput += _textDidChange;
+            _inputField.validateInput -= _validateInput;
+            _inputField.validateInput += _validateInput;
         }
     }
 }

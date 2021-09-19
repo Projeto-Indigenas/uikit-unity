@@ -30,11 +30,13 @@ namespace UIKit.Components
 
         void ISerializationCallbackReceiver.OnBeforeSerialize()
         {
-            
+            //
         }
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
+            if (!(_target is IComponentActionBinder binder)) return;
+
             if (_componentActions == null || _componentActions.Length == 0) return;
 
             for (int index = 0; index < _componentActions.Length; index++)
@@ -43,35 +45,33 @@ namespace UIKit.Components
 
                 UnityEngine.Object methodTarget = current.methodTarget;
                 string methodName = current.methodName;
-                string parameters = current.parameters;
-                uint actionType = current.actionType;
+                string parametersTypesNames = current.parameters;
+                string returnTypeName = current.returnType;
+                string eventName = current.eventName;
+
+                Type[] parametersTypes = GetParametersTypes(parametersTypesNames);
+                Type returnType = string.IsNullOrEmpty(returnTypeName) ? null : Type.GetType(returnTypeName);
+
                 MethodInfo methodInfo = null;
-                
                 if (methodTarget)
                 {
                     Type targetType = methodTarget.GetType();
-
+    
                     methodInfo = targetType.GetMethod(
                         methodName,
                         _bindingFlags,
                         null,
-                        GetParametersTypes(parameters),
+                        parametersTypes,
                         null);
                 }
+                EventInfo eventInfo = binder.GetType().GetEvent(eventName, _bindingFlags);
 
                 if (!methodTarget || methodInfo == null) continue;
 
-                if (_target is IComponentActionBinder binder)
-                {
-                    binder.BindAction(methodTarget, methodInfo);
-
-                    continue;
-                }
-
-                if (_target is IGenericComponentActionBinder genericBinder)
-                {
-                    genericBinder.BindAction(actionType, methodTarget, methodInfo);
-                }
+                binder.BindAction(
+                    methodTarget, 
+                    methodInfo,
+                    eventInfo);
             }
         }
 
@@ -98,11 +98,13 @@ namespace UIKit.Components
         [SerializeField] private UnityEngine.Object _methodTarget = default;
         [SerializeField] private string _methodName = default;
         [SerializeField] private string _parameters = default;
-        [SerializeField] private uint _actionType = default;
+        [SerializeField] private string _returnType = default;
+        [SerializeField] private string _eventName = default;
 
         public UnityEngine.Object methodTarget => _methodTarget;
         public string methodName => _methodName;
         public string parameters => _parameters;
-        public uint actionType => _actionType;
+        public string returnType => _returnType;
+        public string eventName => _eventName;
     }
 }

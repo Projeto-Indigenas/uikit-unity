@@ -8,7 +8,8 @@ namespace UIKit.Editor.Drawers
 {
     internal class ComponentBindingMethodDrawer
     {
-        private const float _elementHeight = 60F;
+        private const float _elementHeight = 80F;
+        private const float _propertyHeight = _elementHeight * 0.3F;
 
         private static GUIStyle _popupStyle = default;
 
@@ -60,9 +61,36 @@ namespace UIKit.Editor.Drawers
             float columnWidth = rect.width * .3F;
 
             Rect movingRect = rect;
+
             movingRect.x = columnX;
             movingRect.width = columnWidth;
-            movingRect.height = _elementHeight * .5F;
+            movingRect.height = _propertyHeight;
+
+            EditorGUI.LabelField(movingRect, "ComponentAction type: ", EditorStyles.boldLabel);
+
+            movingRect.x += columnWidth;
+            movingRect.y += 4F;
+            movingRect.width = rect.width - movingRect.width - 4F;
+
+            int selectedActionEventIndex = methodHandler.selectedActionEventNameIndex;
+            string[] actionEventsNames = methodHandler.actionEventsNames;
+
+            int newSelection = EditorGUI.Popup(movingRect, 
+                selectedActionEventIndex, 
+                actionEventsNames,
+                _popupStyle);
+
+            if (newSelection != selectedActionEventIndex)
+            {
+                methodHandler.selectedActionEventNameIndex = newSelection;
+                methodHandler.SetEventNameFieldValue();
+                methodHandler.SetupMethods();
+            }
+
+            movingRect.x = columnX;
+            movingRect.y += _propertyHeight;
+            movingRect.width = columnWidth;
+            movingRect.height = _propertyHeight;
 
             EditorGUI.LabelField(movingRect, "Target ViewController: ", EditorStyles.boldLabel);
 
@@ -71,20 +99,22 @@ namespace UIKit.Editor.Drawers
                 movingRect.x += movingRect.width;
                 movingRect.y += 2F;
                 movingRect.width = rect.width - movingRect.width - 6F;
-                movingRect.height = _elementHeight * 0.4F;
+                movingRect.height = _propertyHeight;
 
-                EditorGUI.ObjectField(movingRect, 
-                    methodHandler.methodTargetProperty,
-                    typeof(Object), GUIContent.none);
+                methodHandler.methodTargetProperty.objectReferenceValue =
+                    EditorGUI.ObjectField(movingRect, 
+                    methodHandler.methodTargetProperty.objectReferenceValue,
+                    typeof(MonoBehaviour), 
+                    true);
             }
             if (EditorGUI.EndChangeCheck() &&
                 methodHandler.methodTargetProperty.serializedObject.ApplyModifiedProperties())
             {
-                methodHandler.SetupMethods(_viewHandler.IsGenericComponentAction());
+                methodHandler.SetupMethods();
                 methodHandler.SetMethodNameFieldValue(false);
             }
 
-            movingRect.y += _elementHeight * .5F;
+            movingRect.y += _propertyHeight;
             movingRect.x = columnX;
             movingRect.width = columnWidth;
             EditorGUI.LabelField(movingRect, "Bound to: ", EditorStyles.boldLabel);
@@ -96,7 +126,7 @@ namespace UIKit.Editor.Drawers
             int selectedMethodIndex = methodHandler.selectedMethodIndex;
             string[] allMethodsSignatures = methodHandler.allMethodsSignatures;
 
-            int newSelection = EditorGUI.Popup(
+            newSelection = EditorGUI.Popup(
                 movingRect, selectedMethodIndex, 
                 allMethodsSignatures, _popupStyle);
 
@@ -142,7 +172,7 @@ namespace UIKit.Editor.Drawers
                                 new ComponentBindingMethodHandler(viewHandler.bindingGenericType,
                                 componentActionsProperty.GetArrayElementAtIndex(index));
 
-            item.SetupMethods(_viewHandler.IsGenericComponentAction());
+            item.SetupMethods();
 
             _methodHandlers.Add(item);
         }

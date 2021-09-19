@@ -80,13 +80,7 @@ namespace UIKit.Editor.Drawers.Handlers
         {
             if (bindingGenericType == null) return false;
             bool isAction1 = bindingGenericType.GetInterfaces().Contains(typeof(IComponentAction));
-            bool isAction2 = IsGenericComponentAction();
-            return (isAction1 || isAction2) && selectedComponentIndex > 0;
-        }
-
-        public bool IsGenericComponentAction()
-        {
-            return bindingGenericType.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IComponentAction<>));
+            return isAction1 && selectedComponentIndex > 0;
         }
 
         public void SetViewPropertyValue(Component view)

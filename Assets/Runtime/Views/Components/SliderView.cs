@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace UIKit
 {
     [RequireComponent(typeof(Slider))]
-    public class SliderView : View, IComponentAction<float>, IComponentActionBinder
+    public class SliderView : View, IComponentAction, IComponentActionBinder
     {
         private Slider _slider = default;
         private Action<float> _valueDidChange = default;
@@ -44,7 +44,7 @@ namespace UIKit
 
         #region IComponentActionBinder
 
-        void IComponentActionBinder.BindAction(UnityEngine.Object target, MethodInfo info)
+        void IComponentActionBinder.BindAction(UnityEngine.Object target, MethodInfo info, EventInfo eventInfo)
         {
             _valueDidChange = (Action<float>)info.CreateDelegate(typeof(Action<float>), target);
 

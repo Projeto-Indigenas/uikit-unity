@@ -53,15 +53,15 @@ namespace UIKit.Editor.Drawers
                 _whiteLargeLabel.fontSize = 18;
             }
 
+            if (_componentActionsProperty == null)
+            {
+                _componentActionsProperty = property.FindPropertyRelative("_componentActions");
+            }
+
             if (_viewHandler == null || !_viewHandler.IsSameProperty(property))
             {
                 _viewHandler = new ComponentBindingViewHandler(property);
                 _viewHandler.Setup();
-            }
-
-            if (_componentActionsProperty == null)
-            {
-                _componentActionsProperty = property.FindPropertyRelative("_componentActions");
 
                 if (_componentActionsProperty != null)
                 {

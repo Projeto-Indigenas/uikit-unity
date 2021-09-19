@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using UIKit.Components;
 using UIKit.Components.Attributes;
 using UnityEditor;
 using UnityEngine;
@@ -11,14 +10,20 @@ namespace UIKit.Editor.Drawers.Handlers
 {
     internal class ComponentBindingMethodHandler
     {
+        private const BindingFlags _bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
         private readonly Type _bindingGenericType = default;
         private readonly SerializedProperty _methodNameProperty = default;
         private readonly SerializedProperty _parametersProperty = default;
-        private readonly SerializedProperty _actionTypeProperty = default;
+        private readonly SerializedProperty _eventNameProperty = default;
 
+        private EventInfo[] _allEventInfos = default;
         private MethodData[] _methodsNamesAndTargets = default;
         
         public readonly SerializedProperty methodTargetProperty = default;
+
+        public string[] actionEventsNames { get; private set; }
+        public int selectedActionEventNameIndex { get; set; }
 
         public string[] allMethodsSignatures { get; private set; }
         public int selectedMethodIndex { get; set; }
@@ -32,10 +37,10 @@ namespace UIKit.Editor.Drawers.Handlers
             methodTargetProperty = componentActionItem.FindPropertyRelative("_methodTarget");
             _methodNameProperty = componentActionItem.FindPropertyRelative("_methodName");
             _parametersProperty = componentActionItem.FindPropertyRelative("_parameters");
-            _actionTypeProperty = componentActionItem.FindPropertyRelative("_actionType");
+            _eventNameProperty = componentActionItem.FindPropertyRelative("_eventName");
         }
 
-        public void SetupMethods(bool isGenericComponentAction)
+        public void SetupMethods()
         {
             UnityEngine.Object targetObject = methodTargetProperty.objectReferenceValue;
 
@@ -43,54 +48,21 @@ namespace UIKit.Editor.Drawers.Handlers
 
             List<MethodData> methodsNamesAndTargets = new List<MethodData> { new MethodData(null, "None", null) };
             List<string> methodsSignatures = new List<string> { "None" };
+            
+            FillEventInfos();
+            ProcessEventInfos();
 
             if (targetObject)
             {
-                MonoBehaviour[] monoBehaviours;
-                if (targetObject is GameObject gameObject)
+                MonoBehaviour[] monoBehaviours = GetMonoBehavioursFromTargetObject(targetObject);
+
+                for (int index = 0; index < monoBehaviours.Length; index++)
                 {
-                    monoBehaviours = gameObject.GetComponents<MonoBehaviour>();
-                }
-                else 
-                {
-                    monoBehaviours = ((MonoBehaviour)targetObject).GetComponents<MonoBehaviour>();
-                }
+                    MonoBehaviour current = monoBehaviours[index];
 
-                for (int indexBehaviours = 0; indexBehaviours < monoBehaviours.Length; indexBehaviours++)
-                {
-                    MonoBehaviour current = monoBehaviours[indexBehaviours];
-                    Type currentType = current.GetType();
+                    MethodInfo[] methods = GetMethodsFromMonoBehaviour(current);
 
-                    MethodInfo[] methods = currentType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-                    Type customAttributeType = typeof(ComponentActionAttribute);
-                    for (int indexMethods = 0; indexMethods < methods.Length; indexMethods++)
-                    {
-                        MethodInfo info = methods[indexMethods];
-
-                        foreach (CustomAttributeData data in info.CustomAttributes)
-                        {
-                            if (!customAttributeType.Name.Equals(data.AttributeType.Name)) continue;
-
-                            ParameterInfo[] parameters = info.GetParameters();
-
-                            if (parameters.Length > 0 && !IsSameComponentActionGenericType(parameters[0].ParameterType) ||
-                                parameters.Length == 0 && isGenericComponentAction)
-                            {
-                                continue;
-                            }
-
-                            string methodSignature = GetFullMethodSignature(targetObject, info, parameters);
-                            string methodName = info.Name;
-                            string parametersNames = GetParametersString(parameters);
-
-                            methodsSignatures.Add(methodSignature);
-                            MethodData pair = new MethodData(current, methodName, parametersNames);
-                            methodsNamesAndTargets.Add(pair);
-
-                            break;
-                        }
-                    }
+                    FilterMatchingMethods(methods, current, targetObject, methodsNamesAndTargets, methodsSignatures);
                 }
             }
 
@@ -106,6 +78,114 @@ namespace UIKit.Editor.Drawers.Handlers
                 if (!current.methodName.Equals(currentMethodNameValue)) continue;
 
                 selectedMethodIndex = index;
+            }
+        }
+
+        private void FillEventInfos()
+        {
+            Type actionBinderAttributeType = typeof(ComponentActionBinderAttribute);
+            _allEventInfos = _bindingGenericType.GetEvents(_bindingFlags).Select(each =>
+            {
+                return Attribute.GetCustomAttribute(each, actionBinderAttributeType) == null ? null : each;
+            }).ToArray();
+        }
+
+        private void FilterMatchingMethods(
+            MethodInfo[] methods, 
+            MonoBehaviour current, 
+            UnityEngine.Object targetObject, 
+            List<MethodData> methodsNamesAndTargets, 
+            List<string> methodsSignatures)
+        {
+            Type customAttributeType = typeof(ComponentActionAttribute);
+            for (int index = 0; index < methods.Length; index++)
+            {
+                MethodInfo info = methods[index];
+
+                if (Attribute.GetCustomAttribute(info, customAttributeType) == null) continue;
+
+                ParameterInfo[] parameters = info.GetParameters();
+                Type[] parametersTypes = Array.ConvertAll(parameters, each => each.ParameterType);
+                Type returnType = info.ReturnType;
+
+                bool isValidMethod = IsSameSignatureFromEventInfo(
+                    _allEventInfos[selectedActionEventNameIndex],
+                    parametersTypes, returnType);
+
+                if (!isValidMethod) continue;
+
+                string methodSignature = GetFullMethodSignature(targetObject, info, parameters);
+                string methodName = info.Name;
+                string parametersNames = GetParametersString(parameters);
+
+                methodsSignatures.Add(methodSignature);
+                MethodData pair = new MethodData(current, methodName, parametersNames);
+                methodsNamesAndTargets.Add(pair);
+            }
+        }
+
+        private bool IsSameSignatureFromEventInfo(EventInfo eventInfo, Type[] parametersTypes, Type returnType)
+        {
+            Type eventType = eventInfo.EventHandlerType;
+            Type[] genericTypeArguments = eventType.GenericTypeArguments;
+
+            if (eventType == typeof(Action))
+            {
+                return parametersTypes.Length == 0 && returnType == typeof(void);
+            }
+
+            if (eventType.IsGenericType && eventType.GetGenericTypeDefinition() == typeof(Action<>))
+            {
+                return returnType.Equals(typeof(void)) && genericTypeArguments.SequenceEqual(parametersTypes);
+            }
+            
+            if (eventType.IsGenericType && eventType.GetGenericTypeDefinition() == typeof(Func<,,,>) &&
+                genericTypeArguments.Length == parametersTypes.Length + 1)
+            {
+                return genericTypeArguments[3].Equals(returnType) &&
+                genericTypeArguments[0].Equals(parametersTypes[0]) &&
+                genericTypeArguments[1].Equals(parametersTypes[1]) &&
+                genericTypeArguments[2].Equals(parametersTypes[2]);
+            }
+            
+            return false;
+        }
+
+        private static MethodInfo[] GetMethodsFromMonoBehaviour(MonoBehaviour current)
+        {
+            Type currentType = current.GetType();
+            return currentType.GetMethods(_bindingFlags);
+        }
+
+        private static MonoBehaviour[] GetMonoBehavioursFromTargetObject(UnityEngine.Object targetObject)
+        {
+            MonoBehaviour[] monoBehaviours;
+            if (targetObject is GameObject gameObject)
+            {
+                monoBehaviours = gameObject.GetComponents<MonoBehaviour>();
+            }
+            else
+            {
+                monoBehaviours = ((MonoBehaviour)targetObject).GetComponents<MonoBehaviour>();
+            }
+
+            return monoBehaviours;
+        }
+
+        private void ProcessEventInfos()
+        {
+            actionEventsNames = Array.ConvertAll(_allEventInfos, each => each.Name);
+
+            for (int index = 0; index < actionEventsNames.Length; index++)
+            {
+                string current = actionEventsNames[index];
+                
+                if (current.Equals(_eventNameProperty.stringValue))
+                {
+                    selectedActionEventNameIndex = index;
+
+                    break;
+                }
             }
         }
 
@@ -132,10 +212,20 @@ namespace UIKit.Editor.Drawers.Handlers
             }
         }
 
+        public void SetEventNameFieldValue()
+        {
+            if (_eventNameProperty == null) return;
+
+            _eventNameProperty.stringValue = actionEventsNames[selectedActionEventNameIndex];
+            if (!_eventNameProperty.serializedObject.ApplyModifiedProperties()) return;
+            EditorUtility.SetDirty(_eventNameProperty.serializedObject.targetObject);
+        }
+
         private string GetFullMethodSignature(UnityEngine.Object targetObject, MethodInfo info, ParameterInfo[] parameters)
         {
             string containingClassName = info.DeclaringType.Name;
             string methodName = info.Name;
+            string returnTypeName = info.ReturnType.Name;
             if (parameters.Length > 0)
             {
                 methodName += "(";
@@ -148,16 +238,7 @@ namespace UIKit.Editor.Drawers.Handlers
                 methodName += ")";
             }
             else methodName += "(void)";
-            return $"{targetObject.name} ({containingClassName})/{methodName}";
-        }
-
-        private bool IsSameComponentActionGenericType(Type genericType)
-        {
-            return _bindingGenericType.GetInterfaces().Any(i =>
-            {
-                bool isGeneric = i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IComponentAction<>);
-                return isGeneric && i.GenericTypeArguments[0] == genericType;
-            });
+            return $"{targetObject.name} ({containingClassName})/{methodName} : {returnTypeName}";
         }
 
         private string GetParametersString(ParameterInfo[] parameters)

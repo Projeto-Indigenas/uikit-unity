@@ -47,5 +47,11 @@ namespace UIKitTests
         {
 
         }
+
+        [ComponentAction]
+        private char ValidateInput(string text, int index, char newChar)
+        {
+            return newChar;
+        }
     }
 }

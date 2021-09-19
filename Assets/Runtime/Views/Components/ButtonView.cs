@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using UIKit.Components;
+using UIKit.Components.Attributes;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +13,7 @@ namespace UIKit
         private Button _button = default;
         private Action _buttonPressed = default;
 
+        [ComponentActionBinder]
         public event Action buttonPressed;
 
         #region Life cycle
@@ -38,8 +40,10 @@ namespace UIKit
 
         #region IComponentActionBinder
 
-        void IComponentActionBinder.BindAction(UnityEngine.Object target, MethodInfo info)
+        void IComponentActionBinder.BindAction(UnityEngine.Object target, MethodInfo info, EventInfo eventInfo)
         {
+            if (!eventInfo.Name.Equals(nameof(buttonPressed))) return;
+
             _buttonPressed = (Action)info.CreateDelegate(typeof(Action), target);
             
             BindAction();

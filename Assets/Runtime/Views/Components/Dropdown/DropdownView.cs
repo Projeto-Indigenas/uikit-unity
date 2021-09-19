@@ -2,18 +2,20 @@ using System;
 using System.Reflection;
 using TMPro;
 using UIKit.Components;
+using UIKit.Components.Attributes;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace UIKit
 {
-    public class DropdownView : View, IComponentAction<DropdownOption>, IComponentActionBinder
+    public class DropdownView : View, IComponentAction, IComponentActionBinder
     {
         [SerializeField] private DropdownOption[] _startOptions = default;
 
         private ADropdown _dropdown = default;
         private Action<DropdownOption> _valueDidChange = default;
 
+        [ComponentActionBinder]
         public event Action<DropdownOption> valueDidChange
         {
             add => _dropdown.valueDidChange += value;
@@ -61,8 +63,10 @@ namespace UIKit
 
         #region IComponentActionBinder
 
-        void IComponentActionBinder.BindAction(UnityEngine.Object target, MethodInfo info)
+        void IComponentActionBinder.BindAction(UnityEngine.Object target, MethodInfo info, EventInfo eventInfo)
         {
+            if (!eventInfo.Name.Equals(nameof(valueDidChange))) return;
+
             _valueDidChange = (Action<DropdownOption>)info.CreateDelegate(typeof(Action<DropdownOption>), target);
 
             BindAction();
