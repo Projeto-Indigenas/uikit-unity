@@ -48,6 +48,16 @@ namespace UIKit.Editor.Drawers
 
         public void Draw(Rect movingRect) => _reorderableList.DoList(movingRect);
 
+        public void Clear()
+        {
+            _componentActionsProperty.ClearArray();
+            _methodHandlers.Clear();
+
+            if (!_componentActionsProperty.serializedObject.ApplyModifiedProperties()) return;
+
+            EditorUtility.SetDirty(_componentActionsProperty.serializedObject.targetObject);
+        }
+
         private float GetElementHeight(int index)
         {
             return _elementHeight;

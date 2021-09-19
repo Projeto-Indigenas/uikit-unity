@@ -566,24 +566,5 @@ PrefabInstance:
       propertyPath: m_Name
       value: ViewControllerExample
       objectReference: {fileID: 0}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _buttonViewBinding._componentActions.Array.data[0]._methodName
-      value: ButtonViewAction
-      objectReference: {fileID: 0}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _buttonViewBinding._componentActions.Array.data[0]._methodTarget
-      value: 
-      objectReference: {fileID: 1457142501028648106}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
---- !u!114 &1457142501028648106 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-  m_PrefabInstance: {fileID: 1457142501028648105}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 40134c8f5d527c943be207e1e4129c8c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

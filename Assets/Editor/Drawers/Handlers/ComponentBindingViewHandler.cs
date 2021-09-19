@@ -83,9 +83,13 @@ namespace UIKit.Editor.Drawers.Handlers
             return isAction1 && selectedComponentIndex > 0;
         }
 
-        public void SetViewPropertyValue(Component view)
+        public void SetViewPropertyValue(Component view, ComponentBindingMethodDrawer drawer)
         {
             _viewPropertyInfo.SetValue(binding, view);
+
+            drawer?.Clear();
+
+            EditorUtility.SetDirty(_property.serializedObject.targetObject);
         }
 
         private static string GetComponentPath(Transform transform, Transform root)

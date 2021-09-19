@@ -65,7 +65,7 @@ namespace UIKit
 
         void IComponentActionBinder.BindAction(UnityEngine.Object target, MethodInfo info, EventInfo eventInfo)
         {
-            if (!eventInfo.Name.Equals(nameof(valueDidChange))) return;
+            if (eventInfo == null || !eventInfo.Name.Equals(nameof(valueDidChange))) return;
 
             _valueDidChange = (Action<DropdownOption>)info.CreateDelegate(typeof(Action<DropdownOption>), target);
 

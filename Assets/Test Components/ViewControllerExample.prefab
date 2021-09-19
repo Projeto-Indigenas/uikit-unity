@@ -1341,27 +1341,22 @@ MonoBehaviour:
   _inputFieldViewBinding:
     _target: {fileID: 1457142501185419299}
     _componentActions:
-    - _methodTarget: {fileID: 3037625608170091032}
-      _methodName: PossibleAction
+    - _methodTarget: {fileID: 1457142500473265507}
+      _methodName: InputFieldViewAction
       _parameters: System.String
-      _returnType: 
-      _eventName: 
+      _returnType: System.Void
+      _eventName: didEndEditing
+    - _methodTarget: {fileID: 1457142500473265507}
+      _methodName: OtherInputFieldViewAction
+      _parameters: System.String
+      _returnType: System.Void
+      _eventName: valueDidChange
   _buttonViewBinding:
-    _target: {fileID: 1457142500083909647}
-    _componentActions:
-    - _methodTarget: {fileID: 1457142500473265507}
-      _methodName: ButtonViewAction
-      _parameters: 
-      _returnType: 
-      _eventName: 
+    _target: {fileID: 0}
+    _componentActions: []
   _dropdownViewBinding:
-    _target: {fileID: 1457142499883160243}
-    _componentActions:
-    - _methodTarget: {fileID: 1457142500473265507}
-      _methodName: DropdownViewAction
-      _parameters: UIKit.DropdownOption
-      _returnType: 
-      _eventName: 
+    _target: {fileID: 0}
+    _componentActions: []
 --- !u!1 &1457142500589148107
 GameObject:
   m_ObjectHideFlags: 0

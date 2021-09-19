@@ -16,6 +16,6 @@ namespace UIKit
         protected void DidEndEditing(string newText) => didEndEditing?.Invoke(newText);
         protected void ValueDidChange(string newText) => valueDidChange?.Invoke(newText);
         protected char ValidateInput(string text, int charIndex, char addedChar) 
-            => validateInput?.Invoke(text, charIndex, addedChar) ?? char.MinValue;
+            => validateInput?.Invoke(text, charIndex, addedChar) ?? addedChar;
     }
 }

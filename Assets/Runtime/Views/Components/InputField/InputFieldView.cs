@@ -100,15 +100,15 @@ namespace UIKit
             switch (eventInfo.Name)
             {
                 case nameof(valueDidChange):
-                    _valueDidChange = (Action<string>)info.CreateDelegate(typeof(Action<string>));
+                    _valueDidChange = (Action<string>)info.CreateDelegate(typeof(Action<string>), target);
                     break;
 
                 case nameof(didEndEditing):
-                    _didEndEditing = (Action<string>)info.CreateDelegate(typeof(Action<string>));
+                    _didEndEditing = (Action<string>)info.CreateDelegate(typeof(Action<string>), target);
                     break;
 
                 case nameof(validateInput):
-                    _validateInput = (Func<string, int, char, char>)info.CreateDelegate(typeof(Func<string, int, char, char>));
+                    _validateInput = (Func<string, int, char, char>)info.CreateDelegate(typeof(Func<string, int, char, char>), target);
                     break;
             }
 

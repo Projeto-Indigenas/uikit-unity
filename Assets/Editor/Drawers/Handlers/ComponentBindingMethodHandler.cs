@@ -15,6 +15,7 @@ namespace UIKit.Editor.Drawers.Handlers
         private readonly Type _bindingGenericType = default;
         private readonly SerializedProperty _methodNameProperty = default;
         private readonly SerializedProperty _parametersProperty = default;
+        private readonly SerializedProperty _returnTypeProperty = default;
         private readonly SerializedProperty _eventNameProperty = default;
 
         private EventInfo[] _allEventInfos = default;
@@ -37,6 +38,7 @@ namespace UIKit.Editor.Drawers.Handlers
             methodTargetProperty = componentActionItem.FindPropertyRelative("_methodTarget");
             _methodNameProperty = componentActionItem.FindPropertyRelative("_methodName");
             _parametersProperty = componentActionItem.FindPropertyRelative("_parameters");
+            _returnTypeProperty = componentActionItem.FindPropertyRelative("_returnType");
             _eventNameProperty = componentActionItem.FindPropertyRelative("_eventName");
         }
 
@@ -46,7 +48,7 @@ namespace UIKit.Editor.Drawers.Handlers
 
             selectedMethodIndex = 0;
 
-            List<MethodData> methodsNamesAndTargets = new List<MethodData> { new MethodData(null, "None", null) };
+            List<MethodData> methodsNamesAndTargets = new List<MethodData> { new MethodData(null, "None", null, null) };
             List<string> methodsSignatures = new List<string> { "None" };
             
             FillEventInfos();
@@ -117,9 +119,10 @@ namespace UIKit.Editor.Drawers.Handlers
                 string methodSignature = GetFullMethodSignature(targetObject, info, parameters);
                 string methodName = info.Name;
                 string parametersNames = GetParametersString(parameters);
+                string returnTypeName = returnType.FullName;
 
                 methodsSignatures.Add(methodSignature);
-                MethodData pair = new MethodData(current, methodName, parametersNames);
+                MethodData pair = new MethodData(current, methodName, parametersNames, returnTypeName);
                 methodsNamesAndTargets.Add(pair);
             }
         }
@@ -176,11 +179,19 @@ namespace UIKit.Editor.Drawers.Handlers
         {
             actionEventsNames = Array.ConvertAll(_allEventInfos, each => each.Name);
 
+            string eventNameValue = _eventNameProperty.stringValue;
+
+            if (string.IsNullOrEmpty(eventNameValue))
+            {
+                selectedActionEventNameIndex = 0;
+                SetEventNameFieldValue();
+            }
+
             for (int index = 0; index < actionEventsNames.Length; index++)
             {
                 string current = actionEventsNames[index];
-                
-                if (current.Equals(_eventNameProperty.stringValue))
+
+                if (current.Equals(eventNameValue))
                 {
                     selectedActionEventNameIndex = index;
 
@@ -205,6 +216,7 @@ namespace UIKit.Editor.Drawers.Handlers
             if (setTarget) methodTargetProperty.objectReferenceValue = data.monoBehaviour;
             _methodNameProperty.stringValue = selectedMethodIndex == 0 ? null : data.methodName;
             _parametersProperty.stringValue = data.parameters;
+            _returnTypeProperty.stringValue = data.returnType;
 
             if (methodTargetProperty.serializedObject.ApplyModifiedProperties())
             {
@@ -268,12 +280,14 @@ namespace UIKit.Editor.Drawers.Handlers
         public readonly MonoBehaviour monoBehaviour;
         public readonly string methodName;
         public readonly string parameters;
+        public readonly string returnType;
 
-        public MethodData(MonoBehaviour monoBehaviour, string methodName, string parameters)
+        public MethodData(MonoBehaviour monoBehaviour, string methodName, string parameters, string returnType)
         {
             this.monoBehaviour = monoBehaviour;
             this.methodName = methodName;
             this.parameters = parameters;
+            this.returnType = returnType;
         }
     }
 }

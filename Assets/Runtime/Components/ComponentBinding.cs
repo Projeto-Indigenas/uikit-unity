@@ -68,6 +68,8 @@ namespace UIKit.Components
 
                 if (!methodTarget || methodInfo == null) continue;
 
+                if (!methodInfo.ReturnType.Equals(returnType)) continue;
+
                 binder.BindAction(
                     methodTarget, 
                     methodInfo,
