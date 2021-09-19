@@ -32,22 +32,46 @@ namespace UIKit
         [ComponentActionBinder]
         public event Action<string> didEndEditing
         {
-            add => _inputField.didEndEditing += value;
-            remove => _inputField.didEndEditing -= value;
+            add
+            {
+                if (_inputField == null) return;
+                _inputField.didEndEditing += value;
+            }
+            remove
+            {
+                if (_inputField == null) return;
+                _inputField.didEndEditing -= value;
+            }
         }
 
         [ComponentActionBinder]
         public event Action<string> valueDidChange
         {
-            add => _inputField.valueDidChange += value;
-            remove => _inputField.valueDidChange -= value;
+            add
+            {
+                if (_inputField == null) return;
+                _inputField.valueDidChange += value;
+            }
+            remove
+            {
+                if (_inputField == null) return;
+                _inputField.valueDidChange -= value;
+            }
         }
 
         [ComponentActionBinder]
         public event Func<string, int, char, char> validateInput
         {
-            add => _inputField.validateInput += value;
-            remove => _inputField.validateInput -= value;
+            add
+            {
+                if (_inputField == null) return;
+                _inputField.validateInput += value;
+            }
+            remove
+            {
+                if (_inputField == null) return;
+                _inputField.validateInput -= value;
+            }
         }
 
         #region Life cycle
@@ -100,14 +124,20 @@ namespace UIKit
             switch (eventInfo.Name)
             {
                 case nameof(valueDidChange):
+                    valueDidChange -= _valueDidChange;
+
                     _valueDidChange = (Action<string>)info.CreateDelegate(typeof(Action<string>), target);
                     break;
 
                 case nameof(didEndEditing):
+                    didEndEditing -= _didEndEditing;
+
                     _didEndEditing = (Action<string>)info.CreateDelegate(typeof(Action<string>), target);
                     break;
 
                 case nameof(validateInput):
+                    validateInput -= _validateInput;
+
                     _validateInput = (Func<string, int, char, char>)info.CreateDelegate(typeof(Func<string, int, char, char>), target);
                     break;
             }

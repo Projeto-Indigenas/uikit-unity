@@ -42,6 +42,8 @@ namespace UIKit
 
         void IComponentActionBinder.BindAction(UnityEngine.Object target, MethodInfo info, EventInfo eventInfo)
         {
+            if (_buttonPressed != null) buttonPressed -= _buttonPressed;
+
             if (eventInfo == null || !eventInfo.Name.Equals(nameof(buttonPressed))) return;
 
             _buttonPressed = (Action)info.CreateDelegate(typeof(Action), target);

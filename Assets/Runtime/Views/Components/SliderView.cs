@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using UIKit.Components;
+using UIKit.Components.Attributes;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,6 +19,7 @@ namespace UIKit
             set => _slider.value = value;
         }
 
+        [ComponentActionBinder]
         public event Action<float> valueDidChange;
 
         #region Life cycle
@@ -46,6 +48,10 @@ namespace UIKit
 
         void IComponentActionBinder.BindAction(UnityEngine.Object target, MethodInfo info, EventInfo eventInfo)
         {
+            if (_valueDidChange != null) valueDidChange -= _valueDidChange;
+
+            if (eventInfo == null || !eventInfo.Name.Equals(nameof(valueDidChange))) return;
+
             _valueDidChange = (Action<float>)info.CreateDelegate(typeof(Action<float>), target);
 
             BindAction();

@@ -2,7 +2,6 @@ using UIKit.Components;
 using UIKit.Editor.Drawers.Handlers;
 using UIKit.Editor.Extensions;
 using UnityEditor;
-using UnityEditorInternal;
 using UnityEngine;
 
 namespace UIKit.Editor.Drawers
@@ -10,12 +9,13 @@ namespace UIKit.Editor.Drawers
     [CustomPropertyDrawer(typeof(ComponentBinding), true)]
     class ComponentBindingPropertyDrawer : PropertyDrawer
     {
-        private const float _foldoutHeight = 30F;
+        private const float _foldoutHeight = 20F;
 
         public const float height = 60F;
 
         private static bool _draw = default;
         private static GUIStyle _whiteLargeLabel = default;
+        private static GUIStyle _foldoutStyle = default;
 
         private SerializedProperty _componentActionsProperty = default;
         private ComponentBindingViewHandler _viewHandler = default;
@@ -33,7 +33,7 @@ namespace UIKit.Editor.Drawers
             {
                 if (!_foldout)
                 {
-                    return height + _foldoutHeight;
+                    return height + _foldoutHeight * 1.3F;
                 }
 
                 return height + _foldoutHeight + _methodDrawer.height;
@@ -51,6 +51,13 @@ namespace UIKit.Editor.Drawers
                 _whiteLargeLabel = new GUIStyle(EditorStyles.whiteLargeLabel);
                 _whiteLargeLabel.fontStyle = FontStyle.Bold;
                 _whiteLargeLabel.fontSize = 18;
+            }
+
+            if (_foldoutStyle == null)
+            {
+                _foldoutStyle = new GUIStyle(EditorStyles.foldout);
+                _foldoutStyle.fontSize = 14;
+                _foldoutStyle.fontStyle = FontStyle.Bold;
             }
 
             if (_componentActionsProperty == null)
@@ -104,12 +111,16 @@ namespace UIKit.Editor.Drawers
 
             if (!_viewHandler.IsComponentAction()) return;
 
-            movingRect.x = position.x + 14F;
+            movingRect.x = position.x;
             movingRect.y += height * .5F;
             movingRect.width = position.width;
             movingRect.height = _foldoutHeight;
 
-            _foldout = EditorGUI.BeginFoldoutHeaderGroup(movingRect, _foldout, "ComponentAction Bindings");
+            EditorGUI.DrawRect(movingRect, Color.black.WithAlpha(.5F));
+
+            movingRect.x += 14F;
+
+            _foldout = EditorGUI.Foldout(movingRect, _foldout, " Events", true, _foldoutStyle);
 
             if (_foldout)
             {
@@ -120,8 +131,6 @@ namespace UIKit.Editor.Drawers
 
                 _methodDrawer.Draw(movingRect);
             }
-
-            EditorGUI.EndFoldoutHeaderGroup();
         }
 
         private Color GetColor()

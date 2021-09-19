@@ -213,7 +213,7 @@ namespace UIKit.Editor.Drawers.Handlers
 
             MethodData data = _methodsNamesAndTargets[selectedMethodIndex];
 
-            if (setTarget) methodTargetProperty.objectReferenceValue = data.monoBehaviour;
+            if (setTarget && data.monoBehaviour) methodTargetProperty.objectReferenceValue = data.monoBehaviour;
             _methodNameProperty.stringValue = selectedMethodIndex == 0 ? null : data.methodName;
             _parametersProperty.stringValue = data.parameters;
             _returnTypeProperty.stringValue = data.returnType;
@@ -229,6 +229,7 @@ namespace UIKit.Editor.Drawers.Handlers
             if (_eventNameProperty == null) return;
 
             _eventNameProperty.stringValue = actionEventsNames[selectedActionEventNameIndex];
+            _methodNameProperty.stringValue = null;
             if (!_eventNameProperty.serializedObject.ApplyModifiedProperties()) return;
             EditorUtility.SetDirty(_eventNameProperty.serializedObject.targetObject);
         }

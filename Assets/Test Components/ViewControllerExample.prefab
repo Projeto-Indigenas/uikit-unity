@@ -1342,21 +1342,51 @@ MonoBehaviour:
     _target: {fileID: 1457142501185419299}
     _componentActions:
     - _methodTarget: {fileID: 1457142500473265507}
+      _methodName: ValidateInput
+      _parameters: System.String;System.Int32;System.Char
+      _returnType: System.Char
+      _eventName: validateInput
+    - _methodTarget: {fileID: 1457142500473265507}
       _methodName: InputFieldViewAction
       _parameters: System.String
       _returnType: System.Void
       _eventName: didEndEditing
     - _methodTarget: {fileID: 1457142500473265507}
-      _methodName: OtherInputFieldViewAction
+      _methodName: ValudDidChangeAction
+      _parameters: System.String
+      _returnType: System.Void
+      _eventName: valueDidChange
+    - _methodTarget: {fileID: 1457142500473265507}
+      _methodName: ValudDidChangeAction
       _parameters: System.String
       _returnType: System.Void
       _eventName: valueDidChange
   _buttonViewBinding:
-    _target: {fileID: 0}
-    _componentActions: []
+    _target: {fileID: 1457142500083909647}
+    _componentActions:
+    - _methodTarget: {fileID: 3037625608170091032}
+      _methodName: ButtonViewAction
+      _parameters: 
+      _returnType: System.Void
+      _eventName: buttonPressed
+    - _methodTarget: {fileID: 0}
+      _methodName: 
+      _parameters: 
+      _returnType: 
+      _eventName: buttonPressed
   _dropdownViewBinding:
-    _target: {fileID: 0}
-    _componentActions: []
+    _target: {fileID: 1457142499883160243}
+    _componentActions:
+    - _methodTarget: {fileID: 0}
+      _methodName: 
+      _parameters: 
+      _returnType: 
+      _eventName: valueDidChange
+    - _methodTarget: {fileID: 0}
+      _methodName: 
+      _parameters: 
+      _returnType: 
+      _eventName: valueDidChange
 --- !u!1 &1457142500589148107
 GameObject:
   m_ObjectHideFlags: 0

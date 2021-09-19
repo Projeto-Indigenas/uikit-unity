@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UIKit.Editor.Drawers.Handlers;
 using UnityEditor;
 using UnityEditorInternal;
@@ -34,8 +35,11 @@ namespace UIKit.Editor.Drawers
             _reorderableList = new ReorderableList(_methodHandlers, typeof(ComponentBindingMethodHandler));
             _reorderableList.onAddCallback = AddListElement;
             _reorderableList.onRemoveCallback = RemoveListElement;
-            _reorderableList.elementHeightCallback = GetElementHeight;
             _reorderableList.drawElementCallback = DrawListElement;
+            _reorderableList.drawHeaderCallback = DrawListHeader;
+            _reorderableList.onReorderCallbackWithDetails = ReorderListElement;
+
+            _reorderableList.elementHeight = _elementHeight;
 
             if (_popupStyle == null)
             {
@@ -46,7 +50,12 @@ namespace UIKit.Editor.Drawers
             }
         }
 
-        public void Draw(Rect movingRect) => _reorderableList.DoList(movingRect);
+        public void Draw(Rect movingRect)
+        {
+            movingRect.x += 10F;
+            movingRect.width -= 10F;
+            _reorderableList.DoList(movingRect);
+        }
 
         public void Clear()
         {
@@ -58,9 +67,9 @@ namespace UIKit.Editor.Drawers
             EditorUtility.SetDirty(_componentActionsProperty.serializedObject.targetObject);
         }
 
-        private float GetElementHeight(int index)
+        private void DrawListHeader(Rect rect)
         {
-            return _elementHeight;
+            EditorGUI.LabelField(rect, "Component Actions");
         }
 
         private void DrawListElement(Rect rect, int index, bool isActive, bool isFocused)
@@ -68,18 +77,19 @@ namespace UIKit.Editor.Drawers
             ComponentBindingMethodHandler methodHandler = _methodHandlers[index];
 
             float columnX = rect.x + 2F;
-            float columnWidth = rect.width * .3F;
+            float columnWidth = rect.width * .2F;
 
             Rect movingRect = rect;
 
             movingRect.x = columnX;
+            movingRect.y += 2F;
             movingRect.width = columnWidth;
             movingRect.height = _propertyHeight;
 
-            EditorGUI.LabelField(movingRect, "ComponentAction type: ", EditorStyles.boldLabel);
+            EditorGUI.LabelField(movingRect, "Event name: ", EditorStyles.boldLabel);
 
             movingRect.x += columnWidth;
-            movingRect.y += 4F;
+            movingRect.y += 2F;
             movingRect.width = rect.width - movingRect.width - 4F;
 
             int selectedActionEventIndex = methodHandler.selectedActionEventNameIndex;
@@ -98,16 +108,15 @@ namespace UIKit.Editor.Drawers
             }
 
             movingRect.x = columnX;
-            movingRect.y += _propertyHeight;
+            movingRect.y += _propertyHeight - 2F;
             movingRect.width = columnWidth;
             movingRect.height = _propertyHeight;
 
-            EditorGUI.LabelField(movingRect, "Target ViewController: ", EditorStyles.boldLabel);
+            EditorGUI.LabelField(movingRect, "Target: ", EditorStyles.boldLabel);
 
             EditorGUI.BeginChangeCheck();
             {
                 movingRect.x += movingRect.width;
-                movingRect.y += 2F;
                 movingRect.width = rect.width - movingRect.width - 6F;
                 movingRect.height = _propertyHeight;
 
@@ -168,6 +177,17 @@ namespace UIKit.Editor.Drawers
             FillMethodHandlers(_viewHandler, _componentActionsProperty);
         }
 
+        private void ReorderListElement(ReorderableList list, int oldIndex, int newIndex)
+        {
+            ComponentBindingMethodHandler element = _methodHandlers[oldIndex];
+            _methodHandlers.RemoveAt(oldIndex);
+            _methodHandlers.Insert(newIndex, element);
+
+            _componentActionsProperty.MoveArrayElement(oldIndex, newIndex);
+            if (!_componentActionsProperty.serializedObject.ApplyModifiedProperties()) return;
+            EditorUtility.SetDirty(_componentActionsProperty.serializedObject.targetObject);
+        }
+
         private void FillMethodHandlers(ComponentBindingViewHandler viewHandler, SerializedProperty componentActionsProperty)
         {
             for (int index = 0; index < _componentActionsProperty.arraySize; index++)
@@ -178,9 +198,8 @@ namespace UIKit.Editor.Drawers
 
         private void AddItemToMethodHandlers(ComponentBindingViewHandler viewHandler, SerializedProperty componentActionsProperty, int index)
         {
-            ComponentBindingMethodHandler item =
-                                new ComponentBindingMethodHandler(viewHandler.bindingGenericType,
-                                componentActionsProperty.GetArrayElementAtIndex(index));
+            ComponentBindingMethodHandler item = new ComponentBindingMethodHandler(viewHandler.bindingGenericType, 
+                componentActionsProperty.GetArrayElementAtIndex(index));
 
             item.SetupMethods();
 
