@@ -295,17 +295,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1457142500473265504, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
   m_PrefabInstance: {fileID: 1457142501028648105}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &798387147 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-  m_PrefabInstance: {fileID: 1457142501028648105}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 40134c8f5d527c943be207e1e4129c8c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1249982984
 GameObject:
   m_ObjectHideFlags: 0
@@ -578,80 +567,20 @@ PrefabInstance:
       value: ViewControllerExample
       objectReference: {fileID: 0}
     - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _buttonViewBinding._target
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _dropdownViewBinding._target
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _inputFieldViewBinding._target
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _buttonViewBinding._componentActions.Array.size
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _dropdownViewBinding._componentActions.Array.size
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
       propertyPath: _inputFieldViewBinding._componentActions.Array.size
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _buttonViewBinding._componentActions.Array.data[0]._methodName
-      value: ButtonViewAction
-      objectReference: {fileID: 0}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _buttonViewBinding._componentActions.Array.data[0]._returnType
-      value: System.Void
-      objectReference: {fileID: 0}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _buttonViewBinding._componentActions.Array.data[0]._methodTarget
-      value: 
-      objectReference: {fileID: 798387147}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
       propertyPath: _inputFieldViewBinding._componentActions.Array.data[0]._eventName
-      value: didEndEditing
+      value: valueDidChange
       objectReference: {fileID: 0}
     - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
       propertyPath: _inputFieldViewBinding._componentActions.Array.data[1]._eventName
-      value: didEndEditing
+      value: valueDidChange
       objectReference: {fileID: 0}
     - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _inputFieldViewBinding._componentActions.Array.data[0]._methodName
-      value: InputFieldViewAction
+      propertyPath: _inputFieldViewBinding._componentActions.Array.data[2]._eventName
+      value: valueDidChange
       objectReference: {fileID: 0}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _inputFieldViewBinding._componentActions.Array.data[0]._parameters
-      value: System.String
-      objectReference: {fileID: 0}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _inputFieldViewBinding._componentActions.Array.data[0]._returnType
-      value: System.Void
-      objectReference: {fileID: 0}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _inputFieldViewBinding._componentActions.Array.data[1]._methodName
-      value: OtherInputFieldViewAction
-      objectReference: {fileID: 0}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _inputFieldViewBinding._componentActions.Array.data[1]._parameters
-      value: System.String
-      objectReference: {fileID: 0}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _inputFieldViewBinding._componentActions.Array.data[1]._returnType
-      value: System.Void
-      objectReference: {fileID: 0}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _inputFieldViewBinding._componentActions.Array.data[0]._methodTarget
-      value: 
-      objectReference: {fileID: 798387147}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _inputFieldViewBinding._componentActions.Array.data[1]._methodTarget
-      value: 
-      objectReference: {fileID: 798387147}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}

@@ -32,12 +32,11 @@ namespace UIKit.Editor.Drawers
             _methodHandlers = new List<ComponentBindingMethodHandler>();
             FillMethodHandlers(viewHandler, componentActionsProperty);
 
-            _reorderableList = new ReorderableList(_methodHandlers, typeof(ComponentBindingMethodHandler));
+            _reorderableList = new ReorderableList(_methodHandlers, typeof(ComponentBindingMethodHandler),
+                draggable: true, displayHeader: true, displayAddButton: true, displayRemoveButton: false);
             _reorderableList.onAddCallback = AddListElement;
-            _reorderableList.onRemoveCallback = RemoveListElement;
             _reorderableList.drawElementCallback = DrawListElement;
             _reorderableList.drawHeaderCallback = DrawListHeader;
-            _reorderableList.onReorderCallbackWithDetails = ReorderListElement;
 
             _reorderableList.elementHeight = _elementHeight;
 
@@ -76,10 +75,13 @@ namespace UIKit.Editor.Drawers
 
         private void DrawListElement(Rect rect, int index, bool isActive, bool isFocused)
         {
+            if (index >= _methodHandlers.Count) return;
+
             ComponentBindingMethodHandler methodHandler = _methodHandlers[index];
 
             float columnX = rect.x + 2F;
             float columnWidth = rect.width * .2F;
+            float paddingRight = 18F;
 
             Rect movingRect = rect;
 
@@ -92,7 +94,7 @@ namespace UIKit.Editor.Drawers
 
             movingRect.x += columnWidth;
             movingRect.y += 2F;
-            movingRect.width = rect.width - movingRect.width - 4F;
+            movingRect.width = rect.width - movingRect.width - paddingRight;
 
             int selectedActionEventIndex = methodHandler.selectedActionEventNameIndex;
             string[] actionEventsNames = methodHandler.actionEventsNames;
@@ -119,7 +121,7 @@ namespace UIKit.Editor.Drawers
             EditorGUI.BeginChangeCheck();
             {
                 movingRect.x += movingRect.width;
-                movingRect.width = rect.width - movingRect.width - 6F;
+                movingRect.width = rect.width - movingRect.width - paddingRight;
                 movingRect.height = _propertyHeight;
 
                 methodHandler.methodTargetProperty.objectReferenceValue =
@@ -142,7 +144,7 @@ namespace UIKit.Editor.Drawers
 
             movingRect.y += 4F;
             movingRect.x += movingRect.width;
-            movingRect.width = rect.width - movingRect.width - 6F;
+            movingRect.width = rect.width - movingRect.width - paddingRight;
 
             int selectedMethodIndex = methodHandler.selectedMethodIndex;
             string[] allMethodsSignatures = methodHandler.allMethodsSignatures;
@@ -155,6 +157,17 @@ namespace UIKit.Editor.Drawers
             {
                 methodHandler.selectedMethodIndex = newSelection;
                 methodHandler.SetMethodNameFieldValue(_viewHandler.viewProperty);
+            }
+
+            movingRect.x = rect.width + 38F;
+            movingRect.y = rect.y + 2F;
+            movingRect.width = 18F;
+            movingRect.height = _elementHeight * .9F;
+
+            if (GUI.Button(movingRect, "-"))
+            {
+                _reorderableList.index = index;
+                RemoveListElement(_reorderableList);
             }
         }
 
@@ -171,23 +184,13 @@ namespace UIKit.Editor.Drawers
         private void RemoveListElement(ReorderableList list)
         {
             int index = list.index;
+            list.list.RemoveAt(index);
             _componentActionsProperty.DeleteArrayElementAtIndex(index);
             if (!_componentActionsProperty.serializedObject.ApplyModifiedProperties()) return;
             EditorUtility.SetDirty(_componentActionsProperty.serializedObject.targetObject);
 
             _methodHandlers.Clear();
             FillMethodHandlers(_viewHandler, _componentActionsProperty);
-        }
-
-        private void ReorderListElement(ReorderableList list, int oldIndex, int newIndex)
-        {
-            ComponentBindingMethodHandler element = _methodHandlers[oldIndex];
-            _methodHandlers.RemoveAt(oldIndex);
-            _methodHandlers.Insert(newIndex, element);
-
-            _componentActionsProperty.MoveArrayElement(oldIndex, newIndex);
-            if (!_componentActionsProperty.serializedObject.ApplyModifiedProperties()) return;
-            EditorUtility.SetDirty(_componentActionsProperty.serializedObject.targetObject);
         }
 
         private void FillMethodHandlers(ComponentBindingViewHandler viewHandler, SerializedProperty componentActionsProperty)
