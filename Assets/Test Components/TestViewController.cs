@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using UIKit;
 using UIKit.Components;
 using UIKit.Components.Attributes;
@@ -7,15 +8,24 @@ namespace UIKitTests
 {
     class TestViewController : ViewController
     {
-        [SerializeField] private ComponentBinding _unkownViewTypeBinding = default;
+        [SerializeField] private ComponentBinding _unkownViewBinding = default;
         [SerializeField] private ComponentBinding<InputFieldView> _inputFieldViewBinding = default;
         [SerializeField] private ComponentBinding<ButtonView> _buttonViewBinding = default;
         [SerializeField] private ComponentBinding<DropdownView> _dropdownViewBinding = default;
+        [SerializeField] private ComponentBinding<SliderView> _sliderViewBinding = default;
+
+        private View _view => _unkownViewBinding;
+        private InputFieldView _inputFieldView => _inputFieldViewBinding;
+        private ButtonView _buttonView => _buttonViewBinding;
+        private DropdownView _dropdownView => _dropdownViewBinding;
+        private SliderView _sliderView => _sliderViewBinding;
 
         [ComponentAction]
         private void ButtonViewAction()
         {
             Debug.Log("This is automatically assigned button action");
+
+            _inputFieldView.text = "Button pressed!";
         }
 
         [ComponentAction]
@@ -60,6 +70,12 @@ namespace UIKitTests
             Debug.Log($"This is the ValidateInput autoassigned event: text=({text}), index={index}, newChar={newChar}");
 
             return newChar;
+        }
+
+        [ComponentAction]
+        private void ValueDidChangeSlider(float value)
+        {
+            Debug.Log($"ValueDidChangeSlider: {value}");
         }
     }
 }

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UIKit.Animated
 {
-    public interface IAnimatedView : IView
+    internal interface IAnimatedView : IView
     {
         void Show(bool animated);
         void Hide(bool animated);

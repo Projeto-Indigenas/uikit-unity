@@ -1,6 +1,6 @@
 {
     "name": "UIKit.Editor",
-    "rootNamespace": "",
+    "rootNamespace": "UIKit.Editor",
     "references": [
         "GUID:47510ddabdb064af08052483416ebeef"
     ],

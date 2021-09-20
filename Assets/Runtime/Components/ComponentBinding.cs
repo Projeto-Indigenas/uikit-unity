@@ -9,10 +9,9 @@ namespace UIKit.Components
     {
         [SerializeField] protected View _target;
 
-        public View target
+        public static implicit operator View(ComponentBinding self)
         {
-            get => _target;
-            private set => _target = value;
+            return self._target;
         }
     }
 
@@ -24,7 +23,10 @@ namespace UIKit.Components
 
         [SerializeField] private ComponentActionData[] _componentActions = default;
 
-        public new TComponent target => (TComponent)_target;
+        public static implicit operator TComponent(ComponentBinding<TComponent> self)
+        {
+            return (TComponent)self._target;
+        }
 
         #region ISerializationCallbackReceiver
 

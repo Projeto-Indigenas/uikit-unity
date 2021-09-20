@@ -63,7 +63,7 @@ namespace UIKit.Editor.Drawers.Handlers
                 string path = GetComponentPath(component.transform, targetObject.transform);
                 availableOptions.Add($"{path} ({component.GetType().Name})");
 
-                if (binding.target == component)
+                if (binding == component)
                 {
                     selectedComponentIndex = index + 1;
                 }

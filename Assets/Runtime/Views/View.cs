@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UIKit
 {
-    public interface IView
+    internal interface IView
     {
         void SetViewController(IViewController viewController);
         void Show();
@@ -25,7 +25,7 @@ namespace UIKit
 
         #region IView
 
-        public void SetViewController(IViewController viewController) => _viewController = viewController;
+        void IView.SetViewController(IViewController viewController) => _viewController = viewController;
 
         void IView.Show() => ToggleVisibility(true);
 
