@@ -36,7 +36,7 @@ namespace UIKit
             if (tmpDropdown)
             {
                 _dropdown = new DropdownTMP(tmpDropdown, this);
-                _dropdown.SetOptions(_startOptions);
+                SetOptions(_startOptions);
 
                 return;
             }
@@ -45,7 +45,7 @@ namespace UIKit
             if (dropdown)
             {
                 _dropdown = new DropdownUI(dropdown, this);
-                _dropdown.SetOptions(_startOptions);
+                SetOptions(_startOptions);
 
                 return;
             }
