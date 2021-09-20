@@ -566,21 +566,5 @@ PrefabInstance:
       propertyPath: m_Name
       value: ViewControllerExample
       objectReference: {fileID: 0}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _inputFieldViewBinding._componentActions.Array.size
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _inputFieldViewBinding._componentActions.Array.data[0]._eventName
-      value: valueDidChange
-      objectReference: {fileID: 0}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _inputFieldViewBinding._componentActions.Array.data[1]._eventName
-      value: valueDidChange
-      objectReference: {fileID: 0}
-    - target: {fileID: 1457142500473265507, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: _inputFieldViewBinding._componentActions.Array.data[2]._eventName
-      value: valueDidChange
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
