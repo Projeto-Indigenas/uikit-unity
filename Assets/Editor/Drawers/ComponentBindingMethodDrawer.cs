@@ -57,10 +57,12 @@ namespace UIKit.Editor.Drawers
             _reorderableList.DoList(movingRect);
         }
 
-        public void Clear()
+        public void Clear(bool applyAndSetDirty = true)
         {
             _componentActionsProperty.ClearArray();
             _methodHandlers.Clear();
+
+            if (!applyAndSetDirty) return;
 
             if (!_componentActionsProperty.serializedObject.ApplyModifiedProperties()) return;
 
@@ -130,7 +132,7 @@ namespace UIKit.Editor.Drawers
                 methodHandler.methodTargetProperty.serializedObject.ApplyModifiedProperties())
             {
                 methodHandler.SetupMethods();
-                methodHandler.SetMethodNameFieldValue(false);
+                methodHandler.SetMethodNameFieldValue(_viewHandler.viewProperty, false);
             }
 
             movingRect.y += _propertyHeight;
@@ -152,7 +154,7 @@ namespace UIKit.Editor.Drawers
             if (newSelection != selectedMethodIndex)
             {
                 methodHandler.selectedMethodIndex = newSelection;
-                methodHandler.SetMethodNameFieldValue();
+                methodHandler.SetMethodNameFieldValue(_viewHandler.viewProperty);
             }
         }
 

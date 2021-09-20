@@ -11,11 +11,10 @@ namespace UIKit.Editor.Drawers.Handlers
     internal class ComponentBindingViewHandler
     {
         private readonly SerializedProperty _property = default;
-
-        private PropertyInfo _viewPropertyInfo = default;
         private FieldInfo _propertyFieldInfo = default;
         private bool _initialized = default;
 
+        public SerializedProperty viewProperty { get; private set; }
         public ComponentBinding binding { get; private set; }
         public Type bindingGenericType { get; private set; }
 
@@ -43,8 +42,7 @@ namespace UIKit.Editor.Drawers.Handlers
             _propertyFieldInfo = targetObjectType.GetField(_property.propertyPath, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
             binding = (ComponentBinding)_propertyFieldInfo.GetValue(targetObject);
-            Type componentBindingType = typeof(ComponentBinding);
-            _viewPropertyInfo = componentBindingType.GetProperty("target", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            viewProperty = _property.FindPropertyRelative("_target");
 
             if (_propertyFieldInfo.FieldType.GenericTypeArguments.Length > 0)
             {
@@ -83,11 +81,13 @@ namespace UIKit.Editor.Drawers.Handlers
             return isAction1 && selectedComponentIndex > 0;
         }
 
-        public void SetViewPropertyValue(Component view, ComponentBindingMethodDrawer drawer)
+        public void SetViewPropertyValue(View view, ComponentBindingMethodDrawer drawer)
         {
-            _viewPropertyInfo.SetValue(binding, view);
+            viewProperty.objectReferenceValue = view; 
 
-            drawer?.Clear();
+            drawer?.Clear(false);
+
+            if (!_property.serializedObject.ApplyModifiedProperties()) return;
 
             EditorUtility.SetDirty(_property.serializedObject.targetObject);
         }

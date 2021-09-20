@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using UIKit.Components;
 using UIKit.Components.Attributes;
+using UIKit.Components.Events;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,8 +12,9 @@ namespace UIKit
     [RequireComponent(typeof(Button))]
     public class ButtonView : View, IComponentAction, IComponentActionBinder
     {
+        private readonly ComponentActionEvent<Action> _buttonPressedEvent = new ComponentActionEvent<Action>();
+
         private Button _button = default;
-        private Action _buttonPressed = default;
 
         [ComponentActionBinder]
         public event Action buttonPressed;
@@ -24,16 +27,15 @@ namespace UIKit
 
             _button = GetComponent<Button>();
             _button.onClick.AddListener(ButtonPressed);
-
-            BindAction();
         }
 
         private void OnDestroy()
         {
+            UnbindAll();
+
             if (!_button) return;
 
             _button.onClick.RemoveAllListeners();
-            buttonPressed -= _buttonPressed;
         }
 
         #endregion
@@ -42,25 +44,25 @@ namespace UIKit
 
         void IComponentActionBinder.BindAction(UnityEngine.Object target, MethodInfo info, EventInfo eventInfo)
         {
-            if (_buttonPressed != null) buttonPressed -= _buttonPressed;
-
             if (eventInfo == null || !eventInfo.Name.Equals(nameof(buttonPressed))) return;
 
-            _buttonPressed = (Action)info.CreateDelegate(typeof(Action), target);
-            
-            BindAction();
+            Action action = (Action)info.CreateDelegate(typeof(Action), target);
+            if (!_buttonPressedEvent.AddEvent(action)) return;
+            buttonPressed += action;
+        }
+
+        void IComponentActionBinder.UnbindActions()
+        {
+            UnbindAll();
         }
 
         #endregion
 
         private void ButtonPressed() => buttonPressed?.Invoke();
 
-        private void BindAction()
+        private void UnbindAll()
         {
-            if (!_button) return;
-
-            buttonPressed -= _buttonPressed;
-            buttonPressed += _buttonPressed;
+            _buttonPressedEvent.UnbindAll(each => buttonPressed -= each);
         }
     }
 }

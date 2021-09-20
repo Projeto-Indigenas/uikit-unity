@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UIKit.Components;
 using UIKit.Components.Attributes;
 using UnityEditor;
 using UnityEngine;
@@ -207,7 +208,7 @@ namespace UIKit.Editor.Drawers.Handlers
             return _methodNameProperty.stringValue;
         }
 
-        public void SetMethodNameFieldValue(bool setTarget = true)
+        public void SetMethodNameFieldValue(SerializedProperty viewTarget, bool setTarget = true)
         {
             if (_methodNameProperty == null) return;
 
@@ -217,6 +218,11 @@ namespace UIKit.Editor.Drawers.Handlers
             _methodNameProperty.stringValue = selectedMethodIndex == 0 ? null : data.methodName;
             _parametersProperty.stringValue = data.parameters;
             _returnTypeProperty.stringValue = data.returnType;
+
+            if (viewTarget.objectReferenceValue is IComponentActionBinder binder)
+            {
+                binder.UnbindActions();
+            }
 
             if (methodTargetProperty.serializedObject.ApplyModifiedProperties())
             {

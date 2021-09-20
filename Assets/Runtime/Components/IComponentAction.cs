@@ -11,5 +11,6 @@ namespace UIKit.Components
     public interface IComponentActionBinder
     {
         void BindAction(UnityEngine.Object target, MethodInfo info, EventInfo eventInfo);
+        void UnbindActions();
     }
 }

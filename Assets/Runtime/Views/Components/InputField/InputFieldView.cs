@@ -1,27 +1,22 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using TMPro;
 using UIKit.Components;
 using UIKit.Components.Attributes;
+using UIKit.Components.Events;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace UIKit
 {
-    internal enum EInputFieldActionType
-    {
-        didEndEditing,
-        valueDidChange,
-        textDidChange,
-    }
-
     public class InputFieldView : View, IComponentAction, IComponentActionBinder
     {
-        private AInputField _inputField = default;
+        private readonly ComponentActionEvent<Action<string>> _didEndEditingEvent = new ComponentActionEvent<Action<string>>();
+        private readonly ComponentActionEvent<Action<string>> _valueDidChangeEvent = new ComponentActionEvent<Action<string>>();
+        private readonly ComponentActionEvent<Func<string, int, char, char>> _validateInputEvent = new ComponentActionEvent<Func<string, int, char, char>>();
 
-        private Action<string> _didEndEditing = default;
-        private Action<string> _valueDidChange = default;
-        private Func<string, int, char, char> _validateInput = default;
+        private AInputField _inputField = default;
 
         public string text
         {
@@ -30,49 +25,11 @@ namespace UIKit
         }
 
         [ComponentActionBinder]
-        public event Action<string> didEndEditing
-        {
-            add
-            {
-                if (_inputField == null) return;
-                _inputField.didEndEditing += value;
-            }
-            remove
-            {
-                if (_inputField == null) return;
-                _inputField.didEndEditing -= value;
-            }
-        }
-
+        public event Action<string> didEndEditing;
         [ComponentActionBinder]
-        public event Action<string> valueDidChange
-        {
-            add
-            {
-                if (_inputField == null) return;
-                _inputField.valueDidChange += value;
-            }
-            remove
-            {
-                if (_inputField == null) return;
-                _inputField.valueDidChange -= value;
-            }
-        }
-
+        public event Action<string> valueDidChange;
         [ComponentActionBinder]
-        public event Func<string, int, char, char> validateInput
-        {
-            add
-            {
-                if (_inputField == null) return;
-                _inputField.validateInput += value;
-            }
-            remove
-            {
-                if (_inputField == null) return;
-                _inputField.validateInput -= value;
-            }
-        }
+        public event Func<string, int, char, char> validateInput;
 
         #region Life cycle
 
@@ -83,9 +40,7 @@ namespace UIKit
             TMP_InputField tmpInputField = GetComponent<TMP_InputField>();
             if (tmpInputField)
             {
-                _inputField = new InputFieldTMP(tmpInputField);
-                
-                BindAction();
+                _inputField = new InputFieldTMP(tmpInputField, this);
 
                 return;
             }
@@ -93,9 +48,7 @@ namespace UIKit
             InputField inputField = GetComponent<InputField>();
             if (inputField)
             {
-                _inputField = new InputFieldUI(inputField);
-                
-                BindAction();
+                _inputField = new InputFieldUI(inputField, this);
 
                 return;
             }
@@ -105,12 +58,11 @@ namespace UIKit
 
         private void OnDestroy()
         {
+            UnbindAll();
+
             if (_inputField == null) return;
 
             _inputField.Clear();
-            _inputField.didEndEditing -= _didEndEditing;
-            _inputField.valueDidChange -= _valueDidChange;
-            _inputField.validateInput -= _validateInput;
         }
 
         #endregion
@@ -124,41 +76,48 @@ namespace UIKit
             switch (eventInfo.Name)
             {
                 case nameof(valueDidChange):
-                    valueDidChange -= _valueDidChange;
-
-                    _valueDidChange = (Action<string>)info.CreateDelegate(typeof(Action<string>), target);
+                    {
+                        Action<string> action = (Action<string>)info.CreateDelegate(typeof(Action<string>), target);
+                        if (!_valueDidChangeEvent.AddEvent(action)) return;
+                        valueDidChange += action;
+                    }
                     break;
 
                 case nameof(didEndEditing):
-                    didEndEditing -= _didEndEditing;
-
-                    _didEndEditing = (Action<string>)info.CreateDelegate(typeof(Action<string>), target);
+                    {
+                        Action<string> action = (Action<string>)info.CreateDelegate(typeof(Action<string>), target);
+                        if (!_didEndEditingEvent.AddEvent(action)) return;
+                        didEndEditing += action;
+                    }
                     break;
 
                 case nameof(validateInput):
-                    validateInput -= _validateInput;
-
-                    _validateInput = (Func<string, int, char, char>)info.CreateDelegate(typeof(Func<string, int, char, char>), target);
+                    {
+                        Func<string, int, char, char> func = (Func<string, int, char, char>)info.CreateDelegate(typeof(Func<string, int, char, char>), target);
+                        if (!_validateInputEvent.AddEvent(func)) return;
+                        validateInput += func;
+                    }
                     break;
             }
+        }
 
-            BindAction();
+        void IComponentActionBinder.UnbindActions()
+        {
+            UnbindAll();
         }
 
         #endregion
 
-        private void BindAction()
+        internal void DidEndEditingAction(string newText) => didEndEditing?.Invoke(newText);
+        internal void ValueDidChangeAction(string newText) => valueDidChange?.Invoke(newText);
+        internal char ValidateInputAction(string text, int charIndex, char addedChar)
+            => validateInput?.Invoke(text, charIndex, addedChar) ?? addedChar;
+
+        private void UnbindAll()
         {
-            if (_inputField == null) return;
-
-            _inputField.didEndEditing -= _didEndEditing;
-            _inputField.didEndEditing += _didEndEditing;
-
-            _inputField.valueDidChange -= _valueDidChange;
-            _inputField.valueDidChange += _valueDidChange;
-
-            _inputField.validateInput -= _validateInput;
-            _inputField.validateInput += _validateInput;
+            _valueDidChangeEvent.UnbindAll(each => valueDidChange -= each);
+            _didEndEditingEvent.UnbindAll(each => didEndEditing -= each);
+            _validateInputEvent.UnbindAll(each => validateInput -= each);
         }
     }
 }

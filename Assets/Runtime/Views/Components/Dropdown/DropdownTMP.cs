@@ -13,16 +13,14 @@ namespace UIKit
 
         private readonly TMP_Dropdown _dropdown = default;
 
-        public DropdownTMP(TMP_Dropdown dropdown)
+        public DropdownTMP(TMP_Dropdown dropdown, DropdownView view)
         {
             _dropdown = dropdown;
-            _dropdown.onValueChanged.AddListener(ValueChangedAction);
+            _dropdown.onValueChanged.AddListener(view.ValueDidChangeAction);
         }
 
         public override void SetOptions(DropdownOption[] options)
         {
-            base.SetOptions(options);
-            
             _dropdown.options = options?.Map(_mapper)?.AsList();
         }
 

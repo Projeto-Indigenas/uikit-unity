@@ -13,12 +13,12 @@ namespace UIKit
             set => _inputField.text = value;
         }
 
-        public InputFieldTMP(TMP_InputField inputField)
+        public InputFieldTMP(TMP_InputField inputField, InputFieldView view)
         {
             _inputField = inputField;
-            _inputField.onEndEdit.AddListener(DidEndEditing);
-            _inputField.onValueChanged.AddListener(ValueDidChange);
-            _inputField.onValidateInput = ValidateInput;
+            _inputField.onEndEdit.AddListener(view.DidEndEditingAction);
+            _inputField.onValueChanged.AddListener(view.ValueDidChangeAction);
+            _inputField.onValidateInput += view.ValidateInputAction;
         }
 
         public override void Clear()

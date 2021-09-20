@@ -106,7 +106,7 @@ namespace UIKit.Editor.Drawers
                 _viewHandler.selectedComponentIndex = newSelection;
 
                 if (newSelection == 0) _viewHandler.SetViewPropertyValue(null, _methodDrawer);
-                else _viewHandler.SetViewPropertyValue(allComponents[newSelection - 1], _methodDrawer);
+                else _viewHandler.SetViewPropertyValue((View)allComponents[newSelection - 1], _methodDrawer);
             }
 
             if (!_viewHandler.IsComponentAction()) return;

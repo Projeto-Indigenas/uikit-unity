@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using TMPro;
 using UIKit.Components;
 using UIKit.Components.Attributes;
+using UIKit.Components.Events;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,19 +12,21 @@ namespace UIKit
 {
     public class DropdownView : View, IComponentAction, IComponentActionBinder
     {
+        private readonly ComponentActionEvent<Action<DropdownOption>> _valueDidChangeEvent = new ComponentActionEvent<Action<DropdownOption>>();
+
         [SerializeField] private DropdownOption[] _startOptions = default;
 
+        private DropdownOption[] _options = default;
         private ADropdown _dropdown = default;
-        private Action<DropdownOption> _valueDidChange = default;
 
         [ComponentActionBinder]
-        public event Action<DropdownOption> valueDidChange
-        {
-            add => _dropdown.valueDidChange += value;
-            remove => _dropdown.valueDidChange -= value;
-        }
+        public event Action<DropdownOption> valueDidChange;
 
-        public void SetOptions(DropdownOption[] options) => _dropdown.SetOptions(options);
+        public void SetOptions(DropdownOption[] options)
+        {
+            _options = options;
+            _dropdown.SetOptions(options);
+        }
 
         protected override void Awake()
         {
@@ -31,10 +35,8 @@ namespace UIKit
             TMP_Dropdown tmpDropdown = GetComponent<TMP_Dropdown>();
             if (tmpDropdown)
             {
-                _dropdown = new DropdownTMP(tmpDropdown);
+                _dropdown = new DropdownTMP(tmpDropdown, this);
                 _dropdown.SetOptions(_startOptions);
-
-                BindAction();
 
                 return;
             }
@@ -42,10 +44,8 @@ namespace UIKit
             Dropdown dropdown = GetComponent<Dropdown>();
             if (dropdown)
             {
-                _dropdown = new DropdownUI(dropdown);
+                _dropdown = new DropdownUI(dropdown, this);
                 _dropdown.SetOptions(_startOptions);
-
-                BindAction();
 
                 return;
             }
@@ -55,33 +55,36 @@ namespace UIKit
 
         private void OnDestroy()
         {
+            UnbindAll();
+
             if (_dropdown == null) return;
 
             _dropdown.Clear();
-            _dropdown.valueDidChange -= _valueDidChange;
         }
 
         #region IComponentActionBinder
 
         void IComponentActionBinder.BindAction(UnityEngine.Object target, MethodInfo info, EventInfo eventInfo)
         {
-            if (_valueDidChange != null) valueDidChange -= _valueDidChange;
-
             if (eventInfo == null || !eventInfo.Name.Equals(nameof(valueDidChange))) return;
 
-            _valueDidChange = (Action<DropdownOption>)info.CreateDelegate(typeof(Action<DropdownOption>), target);
+            Action<DropdownOption> action = (Action<DropdownOption>)info.CreateDelegate(typeof(Action<DropdownOption>), target);
+            if (!_valueDidChangeEvent.AddEvent(action)) return;
+            valueDidChange += action;
+        }
 
-            BindAction();
+        void IComponentActionBinder.UnbindActions()
+        {
+            UnbindAll();
         }
 
         #endregion
-        
-        private void BindAction()
-        {
-            if (_dropdown == null) return;
 
-            _dropdown.valueDidChange -= _valueDidChange;
-            _dropdown.valueDidChange += _valueDidChange;
+        internal void ValueDidChangeAction(int index) => valueDidChange?.Invoke(_options[index]);
+
+        private void UnbindAll()
+        {
+            _valueDidChangeEvent.UnbindAll(each => valueDidChange -= each);
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Reflection;
 using UIKit.Components;
 using UIKit.Components.Attributes;
+using UIKit.Components.Events;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,8 +11,9 @@ namespace UIKit
     [RequireComponent(typeof(Slider))]
     public class SliderView : View, IComponentAction, IComponentActionBinder
     {
+        private readonly ComponentActionEvent<Action<float>> _valueDidChangeEvent = new ComponentActionEvent<Action<float>>();
+
         private Slider _slider = default;
-        private Action<float> _valueDidChange = default;
 
         public float value
         {
@@ -30,16 +32,15 @@ namespace UIKit
 
             _slider = GetComponent<Slider>();
             _slider.onValueChanged.AddListener(ValueDidChange);
-
-            BindAction();
         }
 
         private void OnDestroy()
         {
+            UnbindAll();
+
             if (!_slider) return;
 
             _slider.onValueChanged.RemoveAllListeners();
-            valueDidChange -= _valueDidChange;
         }
 
         #endregion
@@ -48,28 +49,25 @@ namespace UIKit
 
         void IComponentActionBinder.BindAction(UnityEngine.Object target, MethodInfo info, EventInfo eventInfo)
         {
-            if (_valueDidChange != null) valueDidChange -= _valueDidChange;
-
             if (eventInfo == null || !eventInfo.Name.Equals(nameof(valueDidChange))) return;
 
-            _valueDidChange = (Action<float>)info.CreateDelegate(typeof(Action<float>), target);
+            Action<float> action = (Action<float>)info.CreateDelegate(typeof(Action<float>), target);
+            if (!_valueDidChangeEvent.AddEvent(action)) return;
+            valueDidChange += action;
+        }
 
-            BindAction();
+        void IComponentActionBinder.UnbindActions()
+        {
+            UnbindAll();
         }
 
         #endregion
 
-        private void ValueDidChange(float newValue)
-        {
-            valueDidChange?.Invoke(newValue);
-        }
+        private void ValueDidChange(float newValue) => valueDidChange?.Invoke(newValue);
 
-        private void BindAction()
+        private void UnbindAll()
         {
-            if (!_slider) return;
-
-            valueDidChange -= _valueDidChange;
-            valueDidChange += _valueDidChange;
+            _valueDidChangeEvent.UnbindAll(each => valueDidChange -= each);
         }
     }
 }
