@@ -62,7 +62,7 @@ namespace UIKit.Editor.CustomEditors
                 EditorGUILayout.LabelField("Bindings", labelStyle);
 
                 if (bindingsCount > 0) DrawBindings(bindings);
-                else EditorGUILayout.LabelField("\tNo bindings for this view.");
+                else EditorGUILayout.LabelField("  No bindings for this view.");
             }
             EditorGUILayout.EndVertical();
         }
