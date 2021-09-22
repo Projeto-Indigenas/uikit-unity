@@ -13,7 +13,7 @@ namespace UIKit.Editor.Drawers
 
         public const float height = 60F;
 
-        private static bool _draw = default;
+        private static Object _currentOwner = default;
         private static GUIStyle _whiteLargeLabel = default;
         private static GUIStyle _foldoutStyle = default;
 
@@ -22,12 +22,19 @@ namespace UIKit.Editor.Drawers
         private ComponentBindingMethodDrawer _methodDrawer = default;
         private bool _foldout = default;
 
-        public static void EnableDrawing() => _draw = true;
-        public static void DisableDrawing() => _draw = false;
+        public static void EnableDrawing(Object obj)
+        {
+            _currentOwner = obj;
+        }
+
+        public static void DisableDrawing()
+        {
+            _currentOwner = null;
+        }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            if (!_draw) return 0F;
+            if (!_currentOwner) return 0F;
 
             if (_viewHandler?.IsComponentAction() ?? false)
             {
@@ -44,7 +51,7 @@ namespace UIKit.Editor.Drawers
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            if (!_draw) return;
+            if (!_currentOwner) return;
 
             if (_whiteLargeLabel == null)
             {
@@ -67,7 +74,7 @@ namespace UIKit.Editor.Drawers
 
             if (_viewHandler == null || !_viewHandler.IsSameProperty(property))
             {
-                _viewHandler = new ComponentBindingViewHandler(property);
+                _viewHandler = new ComponentBindingViewHandler(_currentOwner, property);
                 _viewHandler.Setup();
 
                 if (_componentActionsProperty != null)
@@ -76,17 +83,29 @@ namespace UIKit.Editor.Drawers
                 }
             }
 
-            EditorGUI.DrawRect(position, GetColor());
+            Color oldBgColor = GUI.backgroundColor;
+            GUI.backgroundColor = GetColor();
+            EditorGUI.HelpBox(position, null, MessageType.None);
+            GUI.backgroundColor = oldBgColor;
 
-            float columnX = position.x + 2F;
+            float columnX = position.x + 4F;
             float columnWidth = position.width * .3F;
 
-            Rect movingRect = new Rect(columnX, position.y, position.width - 6F, height * .5F);
+            Rect movingRect = new Rect(columnX, position.y, position.width - columnWidth, height * .5F);
 
             EditorGUI.LabelField(movingRect, property.displayName, _whiteLargeLabel);
 
-            movingRect.y += height * .5F;
-            movingRect.x = columnX;
+            movingRect.x = movingRect.width;
+            movingRect.y += 4F;
+            movingRect.width = columnWidth + 14F;
+            movingRect.height = 24F;
+
+            GUI.enabled = false;
+            EditorGUI.ObjectField(movingRect, _viewHandler.viewProperty, GUIContent.none);
+            GUI.enabled = true;
+
+            movingRect.y += height * .5F - 4F;
+            movingRect.x = columnX + 2F;
             movingRect.width = columnWidth;
 
             EditorGUI.LabelField(movingRect, "Bound to: ", EditorStyles.boldLabel);
@@ -137,10 +156,10 @@ namespace UIKit.Editor.Drawers
         {
             if (_viewHandler.selectedComponentIndex == 0)
             {
-                return Color.red.WithAlpha(.2F);
+                return Color.red;
             }
 
-            return Color.cyan.WithAlpha(.2F);
+            return Color.cyan;
         }
     }
 }

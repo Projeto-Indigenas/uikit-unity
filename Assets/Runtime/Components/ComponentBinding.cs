@@ -5,13 +5,31 @@ using UnityEngine;
 namespace UIKit.Components
 {
     [Serializable]
-    public class ComponentBinding
+    public class ComponentBinding : ISerializationCallbackReceiver
     {
-        [SerializeField] protected View _target;
+#if UNITY_EDITOR
+        [SerializeField] private UnityEngine.Object _owner = default;
+        [SerializeField] private string _propertyName = default;
+#endif
+        [SerializeField] protected View _target = default;
 
         public static implicit operator View(ComponentBinding self)
         {
             return self._target;
+        }
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
+        {
+            //
+        }
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+            if (!_target) return;
+
+#if UNITY_EDITOR
+            EditorNotifier.instance.NotifyAdding(_target, this);
+#endif
         }
     }
 
@@ -37,6 +55,12 @@ namespace UIKit.Components
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
+            if (!_target) return;
+
+#if UNITY_EDITOR
+            EditorNotifier.instance.NotifyAdding(_target, this);
+#endif
+
             if (!(_target is IComponentActionBinder binder)) return;
 
             if (_componentActions == null || _componentActions.Length == 0) return;

@@ -10,9 +10,13 @@ namespace UIKit.Editor.Drawers.Handlers
 {
     internal class ComponentBindingViewHandler
     {
-        private readonly SerializedProperty _property = default;
+        private readonly UnityEngine.Object _owner = default;
+        private readonly SerializedProperty _componentBindingProperty = default;
+
         private FieldInfo _propertyFieldInfo = default;
         private bool _initialized = default;
+        private SerializedProperty _ownerProperty = default;
+        private SerializedProperty _propertyNameProperty = default;
 
         public SerializedProperty viewProperty { get; private set; }
         public ComponentBinding binding { get; private set; }
@@ -22,27 +26,38 @@ namespace UIKit.Editor.Drawers.Handlers
         public string[] availableComponents = default;
         public int selectedComponentIndex { get; set; }
 
-        public ComponentBindingViewHandler(SerializedProperty property)
+        public ComponentBindingViewHandler(UnityEngine.Object owner, SerializedProperty componentBindingProperty)
         {
-            _property = property;
+            _owner = owner;
+            _componentBindingProperty = componentBindingProperty;
         }
 
         public bool IsSameProperty(SerializedProperty property)
         {
-            return _property.Equals(property);
+            return _componentBindingProperty.Equals(property);
         }
 
         public void Setup()
         {
             if (_initialized) return;
 
-            MonoBehaviour targetObject = (MonoBehaviour)_property.serializedObject.targetObject;
+            MonoBehaviour targetObject = (MonoBehaviour)_componentBindingProperty.serializedObject.targetObject;
 
             Type targetObjectType = targetObject.GetType();
-            _propertyFieldInfo = targetObjectType.GetField(_property.propertyPath, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            _propertyFieldInfo = targetObjectType.GetField(_componentBindingProperty.propertyPath, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
             binding = (ComponentBinding)_propertyFieldInfo.GetValue(targetObject);
-            viewProperty = _property.FindPropertyRelative("_target");
+            viewProperty = _componentBindingProperty.FindPropertyRelative("_target");
+            _ownerProperty = _componentBindingProperty.FindPropertyRelative("_owner");
+            _propertyNameProperty = _componentBindingProperty.FindPropertyRelative("_propertyName");
+
+            if (viewProperty.objectReferenceValue)
+            {
+                _ownerProperty.objectReferenceValue = _owner;
+                _propertyNameProperty.stringValue = _componentBindingProperty.name;
+                if (_ownerProperty.serializedObject.ApplyModifiedProperties())
+                { EditorUtility.SetDirty(_ownerProperty.serializedObject.targetObject); }
+            }
 
             if (_propertyFieldInfo.FieldType.GenericTypeArguments.Length > 0)
             {
@@ -83,13 +98,27 @@ namespace UIKit.Editor.Drawers.Handlers
 
         public void SetViewPropertyValue(View view, ComponentBindingMethodDrawer drawer)
         {
-            viewProperty.objectReferenceValue = view; 
+            if (view)
+            {
+                _ownerProperty.objectReferenceValue = _owner;
+                _propertyNameProperty.stringValue = _componentBindingProperty.name;
+            }
+            else
+            {
+                _ownerProperty.objectReferenceValue = null;
+                _propertyNameProperty.stringValue = null;
+            }
+
+            View oldViewValue = (View)viewProperty.objectReferenceValue;
+            EditorNotifier.instance.NotifyRemoving(oldViewValue, binding);
+
+            viewProperty.objectReferenceValue = view;
 
             drawer?.Clear(false);
 
-            if (!_property.serializedObject.ApplyModifiedProperties()) return;
+            if (!_componentBindingProperty.serializedObject.ApplyModifiedProperties()) return;
 
-            EditorUtility.SetDirty(_property.serializedObject.targetObject);
+            EditorUtility.SetDirty(_componentBindingProperty.serializedObject.targetObject);
         }
 
         private static string GetComponentPath(Transform transform, Transform root)

@@ -4,10 +4,10 @@ using UIKit.Editor.Drawers;
 using UnityEditor;
 using UnityEngine;
 
-namespace UIKit.Editor.Editors
+namespace UIKit.Editor.CustomEditors
 {
     [CustomEditor(typeof(MonoBehaviour), true)]
-    class ComponentBindingCustomEditor : UnityEditor.Editor
+    internal class ComponentBindingCustomEditor : UnityEditor.Editor
     {
         private SerializedProperty[] _componentBindings = default;
 
@@ -39,7 +39,7 @@ namespace UIKit.Editor.Editors
             EditorGUILayout.Separator();
             EditorGUILayout.LabelField("Component Bindings", EditorStyles.boldLabel);
 
-            ComponentBindingPropertyDrawer.EnableDrawing();
+            ComponentBindingPropertyDrawer.EnableDrawing(serializedObject.targetObject);
             for (int index = 0; index < _componentBindings.Length; index++)
             {
                 EditorGUILayout.Separator();

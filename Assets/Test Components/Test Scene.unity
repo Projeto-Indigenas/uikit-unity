@@ -566,13 +566,5 @@ PrefabInstance:
       propertyPath: m_Name
       value: ViewControllerExample
       objectReference: {fileID: 0}
-    - target: {fileID: 1604403028034290130, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1622390706895176566, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c5602bf716071d04291c8f36c1ebc8af, type: 3}

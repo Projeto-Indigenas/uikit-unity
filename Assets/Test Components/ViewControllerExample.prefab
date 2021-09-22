@@ -1434,6 +1434,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46487d4a30137bd42ba0b9712137990e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _anyView:
+    _owner: {fileID: 0}
+    _propertyName: 
+    _target: {fileID: 0}
 --- !u!114 &1457142500473265507
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1448,29 +1452,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _visibleWhenFirstLoaded: 0
   _unkownViewBinding:
-    _target: {fileID: 21388758844727011}
+    _owner: {fileID: 0}
+    _propertyName: 
+    _target: {fileID: 0}
   _inputFieldViewBinding:
-    _target: {fileID: 1457142501185419299}
+    _owner: {fileID: 0}
+    _propertyName: 
+    _target: {fileID: 0}
     _componentActions: []
   _buttonViewBinding:
-    _target: {fileID: 1457142500083909647}
-    _componentActions:
-    - _methodTarget: {fileID: 1457142500473265507}
-      _methodName: ButtonViewAction
-      _parameters: 
-      _returnType: System.Void
-      _eventName: buttonPressed
+    _owner: {fileID: 0}
+    _propertyName: 
+    _target: {fileID: 0}
+    _componentActions: []
   _dropdownViewBinding:
-    _target: {fileID: 1457142499883160243}
+    _owner: {fileID: 0}
+    _propertyName: 
+    _target: {fileID: 0}
     _componentActions: []
   _sliderViewBinding:
-    _target: {fileID: 1634401333266490538}
-    _componentActions:
-    - _methodTarget: {fileID: 1457142500473265507}
-      _methodName: ValueDidChangeSlider
-      _parameters: System.Single
-      _returnType: System.Void
-      _eventName: valueDidChange
+    _owner: {fileID: 0}
+    _propertyName: 
+    _target: {fileID: 0}
+    _componentActions: []
 --- !u!1 &1457142500589148107
 GameObject:
   m_ObjectHideFlags: 0
