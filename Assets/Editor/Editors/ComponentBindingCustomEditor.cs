@@ -11,6 +11,8 @@ namespace UIKit.Editor.CustomEditors
     {
         private SerializedProperty[] _componentBindings = default;
 
+        protected bool _doNotDrawInspectorGUI = default;
+
         private void OnEnable()
         {
             List<SerializedProperty> properties = new List<SerializedProperty>();
@@ -34,7 +36,12 @@ namespace UIKit.Editor.CustomEditors
         {
             base.OnInspectorGUI();
 
-            if (_componentBindings.Length == 0) return;
+            ComponentBindingsInspectorGUI();
+        }
+
+        protected void ComponentBindingsInspectorGUI()
+        {
+            if (_componentBindings.Length == 0 || _doNotDrawInspectorGUI) return;
 
             EditorGUILayout.Separator();
             EditorGUILayout.LabelField("Component Bindings", EditorStyles.boldLabel);

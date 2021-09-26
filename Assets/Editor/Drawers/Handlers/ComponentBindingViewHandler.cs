@@ -68,15 +68,28 @@ namespace UIKit.Editor.Drawers.Handlers
             Transform usedForChildren = targetObject.transform.parent;
             if (!usedForChildren) usedForChildren = targetObject.transform;
 
-            allComponents = usedForChildren.GetComponentsInChildren(bindingGenericType, true);
+            List<Component> components = new List<Component>(usedForChildren.GetComponentsInChildren(bindingGenericType, true));
 
             List<string> availableOptions = new List<string> { "None" };
 
-            for (int index = 0; index < allComponents.Length; index++)
+            for (int index = components.Count - 1; index >= 0; index--)
             {
-                Component component = allComponents[index];
+                Component component = components[index];
+
+                if (component == targetObject)
+                {
+                    components.RemoveAt(index);
+                    
+                    if (selectedComponentIndex != 0)
+                    {
+                        selectedComponentIndex -= 1;
+                    }
+
+                    continue;
+                }
+
                 string path = GetComponentPath(component.transform, targetObject.transform);
-                availableOptions.Add($"{path} ({component.GetType().Name})");
+                availableOptions.Insert(1, $"{path} ({component.GetType().Name})");
 
                 if (binding == component)
                 {
@@ -84,6 +97,7 @@ namespace UIKit.Editor.Drawers.Handlers
                 }
             }
 
+            allComponents = components.ToArray();
             availableComponents = availableOptions.ToArray();
 
             _initialized = true;

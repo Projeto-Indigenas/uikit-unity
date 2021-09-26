@@ -8,7 +8,7 @@ using UnityEngine;
 namespace UIKit.Editor.CustomEditors
 {
     [CustomEditor(typeof(View), true)]
-    internal class ViewCustomEditor : UnityEditor.Editor
+    internal class ViewCustomEditor : ComponentBindingCustomEditor
     {
         private const BindingFlags _bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic;
         private const float _columnWidth = 100f;
@@ -44,7 +44,11 @@ namespace UIKit.Editor.CustomEditors
 
         public override void OnInspectorGUI()
         {
+            _doNotDrawInspectorGUI = true;
+
             base.OnInspectorGUI();
+
+            _doNotDrawInspectorGUI = false;
 
             View view = (View)target;
 
@@ -65,6 +69,8 @@ namespace UIKit.Editor.CustomEditors
                 else EditorGUILayout.LabelField("  No bindings for this view.");
             }
             EditorGUILayout.EndVertical();
+
+            base.ComponentBindingsInspectorGUI();
         }
 
         private static void DrawBindings(List<ComponentBinding> bindings)
