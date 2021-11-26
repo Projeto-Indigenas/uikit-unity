@@ -13,12 +13,14 @@ namespace UIKitTests
         [SerializeField] private ComponentBinding<ButtonView> _buttonViewBinding = default;
         [SerializeField] private ComponentBinding<DropdownView> _dropdownViewBinding = default;
         [SerializeField] private ComponentBinding<SliderView> _sliderViewBinding = default;
+        [SerializeField] private ComponentBinding<LabelView> _labelViewBinding = default;
 
         private View _view => _unkownViewBinding;
         private InputFieldView _inputFieldView => _inputFieldViewBinding;
         private ButtonView _buttonView => _buttonViewBinding;
         private DropdownView _dropdownView => _dropdownViewBinding;
         private SliderView _sliderView => _sliderViewBinding;
+        private LabelView _labelView => _labelView;
 
         [ComponentAction]
         private void ButtonViewAction()
