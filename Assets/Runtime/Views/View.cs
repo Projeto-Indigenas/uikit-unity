@@ -26,9 +26,9 @@ namespace UIKit
 
         void IView.SetViewController(IViewController viewController) => _viewController = viewController;
 
-        void IView.Show() => ToggleVisibility(true);
+        public void Show() => ToggleVisibility(true);
 
-        void IView.Hide() => ToggleVisibility(false);
+        public void Hide() => ToggleVisibility(false);
 
         #endregion
 
