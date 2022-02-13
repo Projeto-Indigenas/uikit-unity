@@ -2,6 +2,7 @@ using System.ComponentModel;
 using UIKit;
 using UIKit.Components;
 using UIKit.Components.Attributes;
+using UIKit.Views.Components;
 using UnityEngine;
 
 namespace UIKitTests
@@ -14,13 +15,15 @@ namespace UIKitTests
         [SerializeField] private ComponentBinding<DropdownView> _dropdownViewBinding = default;
         [SerializeField] private ComponentBinding<SliderView> _sliderViewBinding = default;
         [SerializeField] private ComponentBinding<LabelView> _labelViewBinding = default;
+        [SerializeField] private ComponentBinding<ToggleView> _toggleViewBinding = default;
 
         private View _view => _unkownViewBinding;
         private InputFieldView _inputFieldView => _inputFieldViewBinding;
         private ButtonView _buttonView => _buttonViewBinding;
         private DropdownView _dropdownView => _dropdownViewBinding;
         private SliderView _sliderView => _sliderViewBinding;
-        private LabelView _labelView => _labelView;
+        private LabelView _labelView => _labelViewBinding;
+        private ToggleView _toggleView => _toggleViewBinding;
 
         [ComponentAction]
         private void ButtonViewAction()
@@ -78,6 +81,12 @@ namespace UIKitTests
         private void ValueDidChangeSlider(float value)
         {
             Debug.Log($"ValueDidChangeSlider: {value}");
+        }
+
+        [ComponentAction]
+        private void ValueDidChangeToggle(bool value)
+        {
+            Debug.Log($"ValueDidChangeToggle: {value}");
         }
     }
 }
