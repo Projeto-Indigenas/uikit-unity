@@ -18,6 +18,12 @@ namespace UIKit.Views.Components
         [ComponentActionBinder]
         public event Action<bool> valueDidChange;
 
+        public bool isOn
+        {
+            get => _toggle.isOn;
+            set => _toggle.isOn = value;
+        }
+
         protected override void Awake()
         {
             base.Awake();
